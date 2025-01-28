@@ -2,9 +2,9 @@ import fs from "node:fs";
 import pathHelper from "./path-helper.js";
 
 class FS {
-    readFromJson(filePath) {
+    readFromJson(filePath, emptyDataStructure = []) {
         if (!this.exists(filePath)) {
-            throw new Error(`File not found: ${filePath}`);
+            this.writeToJson(filePath, emptyDataStructure);
         }
         const data = fs.readFileSync(filePath, 'utf8');
         return JSON.parse(data);

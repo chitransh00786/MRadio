@@ -28,3 +28,4 @@ token.json
 dymmy.json
 .env
 config/
+test.js

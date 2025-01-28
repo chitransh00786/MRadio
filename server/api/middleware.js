@@ -1,4 +1,3 @@
-const express = require('express');
 
 const authenticateUser = (req, res, next) => {
     const token = req.headers['x-token-key'];

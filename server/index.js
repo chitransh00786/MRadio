@@ -1,9 +1,9 @@
 import express from "express";
 import http from "http";
 import { Server as IOServer } from "socket.io";
-import queue from "./utils/queue.js";
-import SpotifyAPI from "./utils/spotify.js";
-import YouTubeDownloader from "./utils/download.js";
+import queue from "./lib/queue.js";
+import SpotifyAPI from "./lib/spotify.js";
+import YouTubeDownloader from "./lib/download.js";
 
 const PORT = 9126;
 const app = express();

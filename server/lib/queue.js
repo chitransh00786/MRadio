@@ -5,7 +5,7 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
 import fsHelper from "../helper/fs-helper.js";
-import pathHelper from "..//helper/path-helper.js";
+import pathHelper from "../helper/path-helper.js";
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
