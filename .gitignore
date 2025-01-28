@@ -27,3 +27,4 @@ tracks/
 token.json
 dymmy.json
 .env
+config/

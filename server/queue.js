@@ -3,9 +3,10 @@ import { PassThrough } from "stream";
 import Throttle from "throttle";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
-import { readdir } from "fs/promises";
-import { extname, join } from "path";
+import { extname } from "path";
 import { spawn } from "child_process";
+import fsHelper from "./helper/fs-helper.js";
+import pathHelper from "./helper/path-helper.js";
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
@@ -72,7 +73,7 @@ class Queue {
 
     async addTrack(filepath) {
         try {
-            if (extname(filepath).toLowerCase() !== ".mp3") {
+            if (pathHelper.checkExtension(filepath, ".mp3")) {
                 throw new Error("Only MP3 files are supported");
             }
 
@@ -90,16 +91,16 @@ class Queue {
 
     async loadTracks(dir) {
         try {
-            let filenames = await readdir(dir);
+            let filenames = fsHelper.listFiles(dir);
             filenames = filenames.filter(
-                (filename) => extname(filename).toLowerCase() === ".mp3"
+                (filename) => pathHelper.checkExtension(filename, ".mp3")
             );
 
             if (filenames.length === 0) {
                 throw new Error("No MP3 files found in directory");
             }
 
-            const filepaths = filenames.map((filename) => join(dir, filename));
+            const filepaths = filenames.map((filename) => pathHelper.join(dir, filename));
             const promises = filepaths.map(async (filepath) => {
                 const bitrate = await this.getTrackBitrate(filepath);
                 return { filepath, bitrate };
