@@ -96,7 +96,10 @@ class Queue {
             );
 
             if (filenames.length === 0) {
-                throw new Error("No MP3 files found in directory");
+                filenames = fsHelper.listFiles("fallback");
+                filenames = filenames.filter(
+                    (filename) => pathHelper.checkExtension(filename, ".mp3")
+                );
             }
 
             const filepaths = filenames.map((filename) => pathHelper.join(dir, filename));

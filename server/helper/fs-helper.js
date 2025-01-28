@@ -40,6 +40,9 @@ class FS {
     }
 
     listFiles(directoryPath) {
+        if(!this.exists(directoryPath)){
+            this.createDirectory(directoryPath);
+        }
         return fs.readdirSync(directoryPath);
     }
 }
