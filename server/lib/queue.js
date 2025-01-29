@@ -4,8 +4,8 @@ import Throttle from "throttle";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
-import fsHelper from "../helper/fs-helper.js";
 import pathHelper from "../helper/path-helper.js";
+import { fetchNextTrack } from "../utils/utils.js";
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
@@ -19,6 +19,48 @@ class Queue {
         this.stream = null;
         this.throttle = null;
         this.ffmpegProcess = null;
+        this.isDownloading = false;
+        this.minQueueSize = 2;
+        this.downloadPromise = null;
+    }
+
+    async ensureQueueSize() {
+        if (this.isDownloading || this.tracks.length >= this.minQueueSize) {
+            return;
+        }
+
+        this.isDownloading = true;
+        try {
+            const song = await fetchNextTrack();
+            this.tracks.push({ filepath: song.url, bitrate: 128, title: song.title });
+            console.log(`Added new track to queue: ${song.title}`);
+            
+            // Start downloading next song if queue is still below minimum
+            if (this.tracks.length < this.minQueueSize) {
+                this.downloadPromise = this.downloadNextTrack();
+            }
+        } catch (error) {
+            console.error("Error ensuring queue size:", error);
+        } finally {
+            this.isDownloading = false;
+        }
+    }
+
+    async downloadNextTrack() {
+        if (this.isDownloading) {
+            return;
+        }
+
+        this.isDownloading = true;
+        try {
+            const song = await fetchNextTrack();
+            this.tracks.push({ filepath: song.url, bitrate: 128, title: song.title });
+            console.log(`Downloaded and added new track: ${song.title}`);
+        } catch (error) {
+            console.error("Error downloading next track:", error);
+        } finally {
+            this.isDownloading = false;
+        }
     }
 
     current() {
@@ -90,28 +132,31 @@ class Queue {
 
     async loadTracks(dir) {
         try {
-            let filenames = fsHelper.listFiles(dir);
-            filenames = filenames.filter(
-                (filename) => pathHelper.checkExtension(filename, ".mp3")
-            );
+            // Reset queue state
+            this.tracks = [];
+            this.index = 0;
+            this.currentTrack = null;
+            this.isDownloading = false;
+            this.downloadPromise = null;
 
-            if (filenames.length === 0) {
-                filenames = fsHelper.listFiles("fallback");
-                filenames = filenames.filter(
-                    (filename) => pathHelper.checkExtension(filename, ".mp3")
-                );
-            }
+            // Load initial tracks up to minQueueSize
+            console.log("Loading initial tracks...");
+            
+            // Load first track
+            const song = await fetchNextTrack()
+            this.tracks.push({ filepath: song.url, bitrate: 128, title: song.title });
+            console.log(`Added initial track: ${song.title}`);
 
-            const filepaths = filenames.map((filename) => pathHelper.join(dir, filename));
-            const promises = filepaths.map(async (filepath) => {
-                const bitrate = await this.getTrackBitrate(filepath);
-                return { filepath, bitrate };
-            });
+            // Start downloading additional tracks in background
+            this.downloadPromise = (async () => {
+                while (this.tracks.length < this.minQueueSize) {
+                    await this.downloadNextTrack();
+                }
+            })();
 
-            this.tracks = await Promise.all(promises);
-            console.log(`Loaded ${this.tracks.length} tracks`);
+            console.log(`Loaded initial track and queued downloads. Current queue size: ${this.tracks.length}`);
         } catch (error) {
-            console.error(`Directory error: ${error.message}`);
+            console.error(`Error loading tracks: ${error.message}`);
             this.tracks = [];
             throw error;
         }
@@ -186,21 +231,22 @@ class Queue {
     getNextTrack() {
         if (this.tracks.length === 0) return null;
 
-        if (this.currentTrack === null) {
-            this.currentTrack = this.tracks[this.index];
-        } else {
-            this.index = (this.index + 1) % this.tracks.length;
-            this.currentTrack = this.tracks[this.index];
-        }
-
+        // Ensure index is within bounds
+        this.index = Math.min(this.index, this.tracks.length - 1);
+        
+        // Get the next track
+        this.currentTrack = this.tracks[this.index];
+        
         // Broadcast track change to all clients
         const metadata = {
             type: 'metadata',
             track: this.currentTrack.filepath.split('/').pop(),
+            title: this.currentTrack.title || '',
             index: this.index
         };
         this.broadcast(Buffer.from(JSON.stringify(metadata)));
 
+        console.log(`Now playing: ${this.currentTrack.title || 'Unknown'}`);
         return this.currentTrack;
     }
 
@@ -213,6 +259,7 @@ class Queue {
         this.isTransitioning = true;
 
         try {
+            console.log("Skipping song: " + this.currentTrack)
             // Stop current playback
             this.playing = false;
 
@@ -222,6 +269,25 @@ class Queue {
             // Send silence buffer to keep connection alive
             const silenceBuffer = Buffer.alloc(4096);
             this.broadcast(silenceBuffer);
+
+            // Start downloading next track if needed
+            if (this.tracks.length < this.minQueueSize + 1 && !this.isDownloading) {
+                this.downloadPromise = this.downloadNextTrack();
+            }
+
+            // Remove the current track and adjust index
+            this.tracks.shift();
+            this.index = Math.max(0, this.index - 1);
+            console.log("Removed skipped track");
+
+            // Ensure we have enough tracks
+            await this.ensureQueueSize();
+
+            // If we're downloading and queue is empty, wait
+            if (this.tracks.length === 0 && this.downloadPromise) {
+                console.log("Waiting for track download to complete...");
+                await this.downloadPromise;
+            }
 
             // Start next track
             setTimeout(() => {
@@ -342,9 +408,31 @@ class Queue {
             }
         });
 
-        pipeline.on("end", () => {
+        pipeline.on("end", async () => {
             if (this.playing && !this.isTransitioning) {
-                console.log("Track ended, moving to next track...");
+                console.log("Track ended, managing queue...");
+                
+                // Start downloading next track early if needed
+                if (this.tracks.length < this.minQueueSize + 1 && !this.isDownloading) {
+                    this.downloadPromise = this.downloadNextTrack();
+                }
+
+                // Remove the completed track and adjust index
+                this.tracks.shift();
+                this.index = Math.max(0, this.index - 1);
+                console.log("Removed completed track");
+
+                // Ensure we have enough tracks
+                await this.ensureQueueSize();
+
+                // If we're still downloading and queue is empty, wait for download
+                if (this.tracks.length === 0 && this.downloadPromise) {
+                    console.log("Waiting for track download to complete...");
+                    await this.downloadPromise;
+                }
+
+                // Then play the next track
+                console.log("Moving to next track...");
                 this.play(true);
             }
         });

@@ -30,6 +30,14 @@ class SongQueueManager {
         }
     }
 
+    getFirstFromQueue(){
+        return this.queue[0];
+    }
+
+    getLastFromQueue(){
+        return this.queue[this.queue.length - 1];
+    }
+
     addToFront(item) {
         if (typeof item === "object" && item.name && item.url) {
             if (this.isDuplicate(item.url)) {

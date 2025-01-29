@@ -61,7 +61,6 @@ app.get("/", function (req, res) {
 
     app.get("/queue", (req, res) => {
         const songList = queue.getAllQueueList();
-        console.log(songList)
         res.json({ songlist: songList });
     })
 
