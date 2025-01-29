@@ -21,12 +21,44 @@ export const getRandomNumber = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// TODO:
-export const fetchNextTrack = async () => {
-    // Fetch queue list from json.
-    const songQueue = new SongQueueManager();
-    // const getFirst = songQueue.
+// Utils Related to fetching songs.
+const emptySongQueueHandler = async () => {
     const jio = new JioSavan();
     const song = await jio.getRandomFromTop50();
     return song;
+}
+
+const fetchFromYoutube = async () => {
+
+}
+
+const fetchFromJioSavan = async () => {
+
+}
+
+const fetchByUrlType = async (urlType) => {
+    switch (urlType) {
+        case 'youtube':
+            return await fetchFromYoutube();
+        case 'jiosavan':
+            return await fetchFromJioSavan();
+    }
+}
+
+export const fetchNextTrack = async () => {
+    // Fetch queue list from json.
+    let songResult;
+    const songQueue = new SongQueueManager();
+    const getFirst = songQueue.getFirstFromQueue();
+
+    // If Queue is empty, fetch next track randomly from hit songs.
+    if (!getFirst) {
+        songResult = await emptySongQueueHandler();
+        return songResult;
+    }
+
+    // Fetch next track from given URL type.
+    songResult = await fetchByUrlType(getFirst.urlType);
+
+    return songResult;
 }

@@ -1,5 +1,11 @@
 import { getQueueListJson, saveQueueListJson } from "./utils.js";
 
+/**
+ * song queue json format 
+ * title => Song Name
+ * url => url
+ * urlType => url type either it's youtube url or other. ["youtube", "jiosavan"]
+ */
 class SongQueueManager {
     constructor() {
         this.queue = this.readSongQueue() || [];
@@ -18,7 +24,7 @@ class SongQueueManager {
     }
 
     addToQueue(item) {
-        if (typeof item === "object" && item.name && item.url) {
+        if (typeof item === "object" && item.title && item.url) {
             if (this.isDuplicate(item.url)) {
                 console.warn(`Duplicate item not added: ${item.url}`);
             } else {
@@ -26,20 +32,32 @@ class SongQueueManager {
                 this.saveSongQueue();
             }
         } else {
-            console.error("Invalid input. Item must be an object with 'name' and 'url'.");
+            console.error("Invalid input. Item must be an object with 'title' and 'url'.");
         }
     }
 
-    getFirstFromQueue(){
-        return this.queue[0];
+    /**
+     * @returns {{title: string, url: string, urlType: 'youtube' | 'jiosavan'}}
+     */
+    getFirstFromQueue() {
+        if (this.queue.length > 0) {
+            return this.queue[0];
+        } else {
+            console.log("Queue is empty!")
+        }
+
     }
 
-    getLastFromQueue(){
-        return this.queue[this.queue.length - 1];
+    getLastFromQueue() {
+        if (this.queue.length > 0) {
+            return this.queue[this.queue.length - 1];
+        } else {
+            console.log("Queue is empty!")
+        }
     }
 
     addToFront(item) {
-        if (typeof item === "object" && item.name && item.url) {
+        if (typeof item === "object" && item.title && item.url) {
             if (this.isDuplicate(item.url)) {
                 console.warn(`Duplicate item not added: ${item.url}`);
             } else {
@@ -47,7 +65,7 @@ class SongQueueManager {
                 this.saveSongQueue();
             }
         } else {
-            console.error("Invalid input. Item must be an object with 'name' and 'url'.");
+            console.error("Invalid input. Item must be an object with 'title' and 'url'.");
         }
     }
 
