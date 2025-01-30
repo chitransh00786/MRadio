@@ -11,7 +11,6 @@ export const getQueueListJson = () => {
     return fsHelper.readFromJson(SONG_QUEUE_LOCATION, []);
 }
 
-
 function calculateSimilarity(str1, str2) {
     const similarity = token_set_ratio(str1, str2);
     return similarity;
@@ -61,17 +60,17 @@ export const fetchNextTrack = async () => {
     try {
         let songResult;
         const getFirst = songQueue.getFirstFromQueue();
-    
+
         // If Queue is empty, fetch next track randomly from hit songs.
         if (!getFirst) {
             songResult = await emptySongQueueHandler();
             return songResult;
         }
-    
+
         // Fetch next track from given URL type.
         songResult = await fetchByUrlType(getFirst);
         songQueue.removeFromFront();
-        return songResult; 
+        return songResult;
     } catch (error) {
         songQueue.removeFromFront();
     }
@@ -81,7 +80,7 @@ export const fetchNextTrack = async () => {
 
 const SIMILARITY_THRESHOLD = 60;
 
-const checkAndLogSimilarity = (original, found, source) => {
+export const checkSimilarity = (original, found, source) => {
     const similarity = calculateSimilarity(original, found);
     if (similarity < SIMILARITY_THRESHOLD) {
         console.log(`similarity less than ${SIMILARITY_THRESHOLD}: \n original: ${original} \n ${source}: found`);
@@ -100,7 +99,7 @@ const searchSpotifySong = async (songName) => {
             throw new Error("Invalid song name");
         }
 
-        checkAndLogSimilarity(songName, name, "spotify");
+        checkSimilarity(songName, name, "spotify");
         return { name, id };
     } catch (error) {
         console.error("Spotify search error:", error.message);
@@ -149,7 +148,7 @@ const createMetadata = (originalName, spotifyName) => ({
 
 // Update metadata with source info
 const updateMetadata = (metadata, source, title, url, type) => {
-    checkAndLogSimilarity(metadata.originalName, title, type);
+    checkSimilarity(metadata.originalName, title, type);
     return {
         ...metadata,
         title,
@@ -165,19 +164,19 @@ export const generateSongMetadata = async (songName) => {
         if (!spotifyResult) {
             throw new Error("Could not find song on Spotify");
         }
-
+        console.log("spotify result: " + spotifyResult.name);
         const metadata = createMetadata(songName, spotifyResult.name);
 
-        // const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
-        // if (jioSaavnResult) {
-        //     return updateMetadata(
-        //         metadata,
-        //         "jiosavan",
-        //         jioSaavnResult.title,
-        //         jioSaavnResult.url,
-        //         "jiosavan"
-        //     );
-        // }
+        const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
+        if (jioSaavnResult) {
+            return updateMetadata(
+                metadata,
+                "jiosavan",
+                jioSaavnResult.title,
+                jioSaavnResult.url,
+                "jiosavan"
+            );
+        }
 
         const youtubeResult = await searchYouTubeSong(spotifyResult.name);
         if (youtubeResult) {
@@ -189,16 +188,9 @@ export const generateSongMetadata = async (songName) => {
                 "youtube"
             );
         }
-
         throw new Error("Song not found on any platform");
     } catch (error) {
         console.error("Error generating metadata:", error.message);
         return null;
     }
 };
-
-
-// (async () => {
-//     const meta = await generateSongMetadata("tum mile dil kile")
-//     console.log(meta);
-// })();

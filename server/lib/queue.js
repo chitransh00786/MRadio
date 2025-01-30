@@ -6,8 +6,10 @@ import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
 import pathHelper from "../helper/path-helper.js";
 import { fetchNextTrack } from "../utils/utils.js";
+import fsHelper from "../helper/fs-helper.js";
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
+
 
 class Queue {
     constructor() {
@@ -217,6 +219,16 @@ class Queue {
             const hasNextTrack = this.tracks.length > 1;
 
             await this.cleanupCurrentStream();
+            
+            // Delete track file if it exists in tracks folder
+            const currentTrack = this.tracks[0];
+            if (currentTrack && currentTrack.url.startsWith('tracks/')) {
+                if (fsHelper.exists(currentTrack.url)) {
+                    fsHelper.delete(currentTrack.url);
+                    console.log(`Deleted track file: ${currentTrack.url}`);
+                }
+            }
+            
             this.tracks.shift();
             this.index = 0;
 
@@ -344,6 +356,51 @@ class Queue {
 
 
 
+    async handleTrackEnd() {
+        if (!this.playing || this.isTransitioning) return;
+
+        console.log("Track ended, managing queue...");
+        this.isTransitioning = true;
+
+        try {
+            // Delete track file if it exists in tracks folder
+            const currentTrack = this.tracks[0];
+            if (currentTrack && currentTrack.url.startsWith('tracks/')) {
+                if (fsHelper.exists(currentTrack.url)) {
+                    fsHelper.delete(currentTrack.url);
+                    console.log(`Deleted track file: ${currentTrack.url}`);
+                }
+            }
+
+            this.tracks.shift();
+            this.index = 0;
+            await this.ensureQueueSize();
+
+            const maxWaitTime = 5000;
+            const startTime = Date.now();
+
+            while (this.tracks.length === 0) {
+                if (Date.now() - startTime > maxWaitTime) {
+                    console.log("Timeout waiting for next track");
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            if (this.tracks.length > 0) {
+                this.play(true);
+            } else {
+                console.log("No tracks available after current track ended");
+                this.playing = false;
+            }
+        } catch (error) {
+            console.error('Error handling track end:', error);
+            this.playing = false;
+        } finally {
+            this.isTransitioning = false;
+        }
+    }
+
     start() {
         const track = this.currentTrack;
         if (!track) return;
@@ -364,41 +421,7 @@ class Queue {
             }
         });
 
-        pipeline.on("end", async () => {
-            if (!this.playing || this.isTransitioning) return;
-
-            console.log("Track ended, managing queue...");
-            this.isTransitioning = true;
-
-            try {
-                this.tracks.shift();
-                this.index = 0;
-                await this.ensureQueueSize();
-
-                const maxWaitTime = 5000;
-                const startTime = Date.now();
-
-                while (this.tracks.length === 0) {
-                    if (Date.now() - startTime > maxWaitTime) {
-                        console.log("Timeout waiting for next track");
-                        break;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
-
-                if (this.tracks.length > 0) {
-                    this.play(true);
-                } else {
-                    console.log("No tracks available after current track ended");
-                    this.playing = false;
-                }
-            } catch (error) {
-                console.error('Error handling track end:', error);
-                this.playing = false;
-            } finally {
-                this.isTransitioning = false;
-            }
-        });
+        pipeline.on("end", () => this.handleTrackEnd());
 
         pipeline.on("error", (err) => {
             console.error("Stream error:", err);

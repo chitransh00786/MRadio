@@ -46,11 +46,16 @@ app.get("/", function (req, res) {
     })
 
     app.post("/add", express.json(), async (req, res) => {
-        const { songName } = req.body;
-        const metadata = await generateSongMetadata(songName);
-        const songQueue = new SongQueueManager();
-        songQueue.addToQueue(metadata);
-        return res.json({ message: "Track added successfully", title: metadata.title })
+        try {
+            const { songName } = req.body;
+            const metadata = await generateSongMetadata(songName);
+            const songQueue = new SongQueueManager();
+            songQueue.addToQueue(metadata);
+            return res.json({ message: "Track added successfully", title: metadata.title })
+
+        } catch (error) {
+            console.log("error")
+        }
     })
 
     app.get("/queue", (req, res) => {

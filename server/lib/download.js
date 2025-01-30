@@ -12,24 +12,7 @@ class YouTubeDownloader {
                 throw new Error('No video found for the given name and artist');
             }
 
-            const musicVideo = r.videos.find(video => {
-                const titleLower = video.title.toLowerCase();
-                const durationInSeconds = video.seconds;
-
-                const isMusicRelated =
-                    (titleLower.includes('official audio') ||
-                        titleLower.includes('lyric') ||
-                        titleLower.includes('music') ||
-                        titleLower.includes('song')) &&
-                    durationInSeconds <= 600;
-
-                return isMusicRelated;
-            });
-
-            if (!musicVideo) {
-                throw new Error('No music-specific video found in search results');
-            }
-            return musicVideo;
+            return r.videos[0];
         } catch (error) {
             console.log("Error getting details: " + error.message);
             throw error;

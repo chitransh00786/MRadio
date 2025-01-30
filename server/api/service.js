@@ -1,4 +1,6 @@
 import queue from "../lib/queue.js";
+import SongQueueManager from "../utils/songQueueManager.js";
+import { generateSongMetadata } from "../utils/utils.js";
 
 class Service {
 
@@ -40,8 +42,11 @@ class Service {
         }
     }
 
-    async addTrack() {
-        // TODO: Implementation of adding new track.
+    async addTrack(songName) {
+        const metadata = await generateSongMetadata(songName);
+        const songQueue = new SongQueueManager();
+        songQueue.addToQueue(metadata);
+        return {title: metadata.title}
     }
 
     async addSongToQueue() {
