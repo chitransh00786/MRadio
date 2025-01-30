@@ -4,13 +4,16 @@ import { createDownloadLinks } from "../utils/crypto.js";
 import { getRandomNumber } from "../utils/utils.js";
 
 class JioSavan {
-    async getRandomFromTop50(){
+    async getRandomFromTop50(retryCount = 1) {
         try {
             const response = await axios.get(JIO_SAVAN_TOP50);
-            const {list_count, list} = response.data;
-            const songData = list[getRandomNumber(0, list_count)];
-            const {title, more_info} = songData;
-            const {encrypted_media_url} = more_info;
+            const { list_count, list } = response.data;
+            const songData = list[getRandomNumber(0, list_count - 1)];
+
+            if (!songData) throw new Error("No Song Data Found");
+            
+            const { title, more_info } = songData;
+            const { encrypted_media_url } = more_info;
             const songLink = createDownloadLinks(encrypted_media_url);
             return {
                 title,
@@ -19,6 +22,12 @@ class JioSavan {
             }
         } catch (error) {
             console.log(error);
+            console.log("Error fetching data, retries left:", retryCount);
+            if (retryCount > 0) {
+                return getRandomFromTop50(retryCount - 1);
+            }
+            console.error("Failed after retrying:", error);
+            return null;
         }
     }
 }

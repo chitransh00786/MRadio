@@ -62,3 +62,8 @@ export const fetchNextTrack = async () => {
 
     return songResult;
 }
+
+// generate metadata for song to add on the song queue.
+export const generateMetadata = async (songName) => {
+    
+}

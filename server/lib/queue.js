@@ -21,46 +21,33 @@ class Queue {
         this.ffmpegProcess = null;
         this.isDownloading = false;
         this.minQueueSize = 2;
-        this.downloadPromise = null;
     }
 
     async ensureQueueSize() {
-        if (this.isDownloading || this.tracks.length >= this.minQueueSize) {
-            return;
-        }
-
-        this.isDownloading = true;
-        try {
-            const song = await fetchNextTrack();
-            this.tracks.push({ filepath: song.url, bitrate: 128, title: song.title });
-            console.log(`Added new track to queue: ${song.title}`);
-            
-            // Start downloading next song if queue is still below minimum
-            if (this.tracks.length < this.minQueueSize) {
-                this.downloadPromise = this.downloadNextTrack();
-            }
-        } catch (error) {
-            console.error("Error ensuring queue size:", error);
-        } finally {
-            this.isDownloading = false;
-        }
-    }
-
-    async downloadNextTrack() {
         if (this.isDownloading) {
             return;
         }
-
         this.isDownloading = true;
-        try {
-            const song = await fetchNextTrack();
-            this.tracks.push({ filepath: song.url, bitrate: 128, title: song.title });
-            console.log(`Downloaded and added new track: ${song.title}`);
-        } catch (error) {
-            console.error("Error downloading next track:", error);
-        } finally {
-            this.isDownloading = false;
-        }
+        
+        Promise.resolve().then(async () => {
+            try {
+                while (this.tracks.length < this.minQueueSize) {
+                    const song = await fetchNextTrack();
+                    if (this.tracks.length < this.minQueueSize) {
+                        this.tracks.push({
+                            filepath: song.url,
+                            bitrate: 128,
+                            title: song.title
+                        });
+                        console.log(`Downloaded and added new track: ${song.title}`);
+                    }
+                }
+            } catch (error) {
+                console.error("Error ensuring queue size:", error);
+            } finally {
+                this.isDownloading = false;
+            }
+        });
     }
 
     current() {
@@ -137,22 +124,16 @@ class Queue {
             this.index = 0;
             this.currentTrack = null;
             this.isDownloading = false;
-            this.downloadPromise = null;
 
             // Load initial tracks up to minQueueSize
             console.log("Loading initial tracks...");
-            
+
             // Load first track
             const song = await fetchNextTrack()
             this.tracks.push({ filepath: song.url, bitrate: 128, title: song.title });
             console.log(`Added initial track: ${song.title}`);
 
-            // Start downloading additional tracks in background
-            this.downloadPromise = (async () => {
-                while (this.tracks.length < this.minQueueSize) {
-                    await this.downloadNextTrack();
-                }
-            })();
+            this.ensureQueueSize();
 
             console.log(`Loaded initial track and queued downloads. Current queue size: ${this.tracks.length}`);
         } catch (error) {
@@ -174,57 +155,44 @@ class Queue {
     }
 
     async cleanupCurrentStream() {
+        // Immediately stop broadcasting any data
+        this.playing = false;
+        
         return new Promise((resolve) => {
             const cleanup = () => {
-                if (this.throttle) {
-                    this.throttle.removeAllListeners();
-                    this.throttle.destroy();
-                    this.throttle = null;
+                // Immediately kill FFmpeg process first to stop audio generation
+                if (this.ffmpegProcess) {
+                    this.ffmpegProcess.removeAllListeners();
+                    try {
+                        process.kill(this.ffmpegProcess.pid, 'SIGKILL');
+                    } catch (error) {
+                        // Ignore ESRCH errors (process already gone)
+                        if (error.code !== 'ESRCH') {
+                            console.error('Error during FFmpeg cleanup:', error);
+                        }
+                    }
+                    this.ffmpegProcess = null;
                 }
 
+                // Then clean up the stream
                 if (this.stream) {
                     this.stream.removeAllListeners();
                     this.stream.destroy();
                     this.stream = null;
                 }
 
-                if (this.ffmpegProcess) {
-                    this.ffmpegProcess.removeAllListeners();
-
-                    // Check if process is still running before attempting to kill
-                    try {
-                        // First check if process exists and is killable
-                        process.kill(this.ffmpegProcess.pid, 0);
-
-                        // If we get here, process exists, so kill it
-                        process.kill(this.ffmpegProcess.pid, 'SIGKILL');
-                    } catch (error) {
-                        // Ignore ESRCH errors (process already gone)
-                        if (error.code !== 'ESRCH') {
-                            console.error('Error during process cleanup:', error);
-                        }
-                    }
-
-                    this.ffmpegProcess = null;
+                // Finally clean up the throttle
+                if (this.throttle) {
+                    this.throttle.removeAllListeners();
+                    this.throttle.destroy();
+                    this.throttle = null;
                 }
+
                 resolve();
             };
 
-            // If there's an active FFmpeg process, wait for it to close
-            if (this.ffmpegProcess && !this.ffmpegProcess.killed) {
-                this.ffmpegProcess.once('close', cleanup);
-                try {
-                    process.kill(this.ffmpegProcess.pid, 'SIGTERM');
-                } catch (error) {
-                    // Ignore ESRCH errors
-                    if (error.code !== 'ESRCH') {
-                        console.error('Error sending SIGTERM:', error);
-                    }
-                    cleanup();
-                }
-            } else {
-                cleanup();
-            }
+            // Execute cleanup immediately
+            cleanup();
         });
     }
 
@@ -233,10 +201,10 @@ class Queue {
 
         // Ensure index is within bounds
         this.index = Math.min(this.index, this.tracks.length - 1);
-        
+
         // Get the next track
         this.currentTrack = this.tracks[this.index];
-        
+
         // Broadcast track change to all clients
         const metadata = {
             type: 'metadata',
@@ -251,7 +219,7 @@ class Queue {
     }
 
     async skip() {
-        if (!this.tracks.length || this.isTransitioning) {
+        if (this.tracks.length === 0 || this.isTransitioning) {
             console.log("Skip not possible at this time");
             return;
         }
@@ -259,44 +227,42 @@ class Queue {
         this.isTransitioning = true;
 
         try {
-            console.log("Skipping song: " + this.currentTrack)
-            // Stop current playback
             this.playing = false;
-
-            // Clean up current stream
+            console.log("Skipping song:", this.currentTrack?.title || 'Unknown');
+            
+            const hasNextTrack = this.tracks.length > 1;
+            
             await this.cleanupCurrentStream();
-
-            // Send silence buffer to keep connection alive
-            const silenceBuffer = Buffer.alloc(4096);
-            this.broadcast(silenceBuffer);
-
-            // Start downloading next track if needed
-            if (this.tracks.length < this.minQueueSize + 1 && !this.isDownloading) {
-                this.downloadPromise = this.downloadNextTrack();
-            }
-
-            // Remove the current track and adjust index
             this.tracks.shift();
-            this.index = Math.max(0, this.index - 1);
-            console.log("Removed skipped track");
+            this.index = 0;
 
-            // Ensure we have enough tracks
-            await this.ensureQueueSize();
-
-            // If we're downloading and queue is empty, wait
-            if (this.tracks.length === 0 && this.downloadPromise) {
-                console.log("Waiting for track download to complete...");
-                await this.downloadPromise;
-            }
-
-            // Start next track
-            setTimeout(() => {
+            if (hasNextTrack) {
                 this.playing = true;
-                this.play(true);
-                this.isTransitioning = false;
-            }, 200);  // Increased delay for better stability
+                await this.play(true);
+            } else {
+                const maxWaitTime = 2000;
+                const startTime = Date.now();
+                
+                while (this.tracks.length === 0) {
+                    if (Date.now() - startTime > maxWaitTime) {
+                        console.log("No tracks available after waiting");
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                if (this.tracks.length > 0) {
+                    this.playing = true;
+                    await this.play(true);
+                } else {
+                    console.log("No tracks available after skip");
+                }
+            }
+            this.ensureQueueSize();
         } catch (error) {
             console.error('Error during skip:', error);
+            this.playing = false;
+        } finally {
             this.isTransitioning = false;
         }
     }
@@ -318,19 +284,25 @@ class Queue {
         return this.currentTrack !== null;
     }
 
-    play(useNewTrack = false) {
+    async play(useNewTrack = false) {
         if (this.tracks.length === 0) {
             console.log("No tracks in queue");
             this.playing = false;
             return;
         }
 
-        if (useNewTrack || !this.currentTrack) {
-            this.getNextTrack();
-        }
+        try {
+            if (useNewTrack || !this.currentTrack) {
+                this.getNextTrack();
+            }
 
-        this.loadTrackStream();
-        this.start();
+            await this.cleanupCurrentStream();
+            this.loadTrackStream();
+            this.start();
+        } catch (error) {
+            console.error('Error during play:', error);
+            this.playing = false;
+        }
     }
 
     loadTrackStream() {
@@ -409,31 +381,38 @@ class Queue {
         });
 
         pipeline.on("end", async () => {
-            if (this.playing && !this.isTransitioning) {
-                console.log("Track ended, managing queue...");
-                
-                // Start downloading next track early if needed
-                if (this.tracks.length < this.minQueueSize + 1 && !this.isDownloading) {
-                    this.downloadPromise = this.downloadNextTrack();
-                }
+            if (!this.playing || this.isTransitioning) return;
 
-                // Remove the completed track and adjust index
+            console.log("Track ended, managing queue...");
+            this.isTransitioning = true;
+
+            try {
                 this.tracks.shift();
-                this.index = Math.max(0, this.index - 1);
-                console.log("Removed completed track");
-
-                // Ensure we have enough tracks
+                this.index = 0;
                 await this.ensureQueueSize();
 
-                // If we're still downloading and queue is empty, wait for download
-                if (this.tracks.length === 0 && this.downloadPromise) {
-                    console.log("Waiting for track download to complete...");
-                    await this.downloadPromise;
+                const maxWaitTime = 5000;
+                const startTime = Date.now();
+                
+                while (this.tracks.length === 0) {
+                    if (Date.now() - startTime > maxWaitTime) {
+                        console.log("Timeout waiting for next track");
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
 
-                // Then play the next track
-                console.log("Moving to next track...");
-                this.play(true);
+                if (this.tracks.length > 0) {
+                    this.play(true);
+                } else {
+                    console.log("No tracks available after current track ended");
+                    this.playing = false;
+                }
+            } catch (error) {
+                console.error('Error handling track end:', error);
+                this.playing = false;
+            } finally {
+                this.isTransitioning = false;
             }
         });
 
