@@ -7,7 +7,7 @@ import YouTubeDownloader from "./lib/download.js";
 import { generateSongMetadata } from "./utils/utils.js";
 import SongQueueManager from "./utils/songQueueManager.js";
 
-const PORT = 4001;
+const PORT = 9126;
 const app = express();
 const server = http.createServer(app);
 const io = new IOServer(server);
@@ -46,12 +46,11 @@ app.get("/", function (req, res) {
     })
 
     app.post("/add", express.json(), async (req, res) => {
-        console.log("calling add")
         const { songName } = req.body;
         const metadata = await generateSongMetadata(songName);
         const songQueue = new SongQueueManager();
         songQueue.addToQueue(metadata);
-        return res.json({ message: "Track added successfully" })
+        return res.json({ message: "Track added successfully", title: metadata.title })
     })
 
     app.get("/queue", (req, res) => {

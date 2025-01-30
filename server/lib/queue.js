@@ -34,9 +34,10 @@ class Queue {
                 while (this.tracks.length < this.minQueueSize) {
                     const song = await fetchNextTrack();
                     if (this.tracks.length < this.minQueueSize) {
+                        const songBitrate = await this.getTrackBitrate(song.url);
                         this.tracks.push({
                             url: song.url,
-                            bitrate: 128,
+                            bitrate: songBitrate,
                             title: song.title
                         });
                         console.log(`Downloaded and added new track: ${song.title}`);
@@ -112,8 +113,8 @@ class Queue {
 
             // Load first track
             const song = await fetchNextTrack()
-            console.log(song, "song detail");
-            this.tracks.push({ url: song.url, bitrate: 128, title: song.title });
+            const songBitrate = await this.getTrackBitrate(song.url)
+            this.tracks.push({ url: song.url, bitrate: songBitrate, title: song.title });
             console.log(`Added initial track: ${song.title}`);
 
             this.ensureQueueSize();
@@ -130,7 +131,7 @@ class Queue {
         return new Promise((resolve) => {
             ffmpeg.ffprobe(url, (err, metadata) => {
                 if (err || !metadata?.format?.bit_rate) {
-                    return resolve(128000); // Default to 128kbps
+                    return resolve(128000);
                 }
                 resolve(metadata.format.bit_rate);
             });

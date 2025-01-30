@@ -26,7 +26,6 @@ class SpotifyAPI {
         try {
             const response = await axios.post(this.tokenUrl, data, config);
             const accessToken = response.data.access_token;
-            console.log('Access Token:', accessToken);
             return accessToken;
         } catch (error) {
             console.error('Error fetching access token:', error.response ? error.response.data : error.message);
@@ -82,7 +81,6 @@ class SpotifyAPI {
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
-            console.log(response.data);
             return response.data.tracks.items[0];
         } catch (error) {
             console.error('Error searching for track:', error.response ? error.response.data : error.message);

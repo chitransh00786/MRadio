@@ -2,6 +2,7 @@ import ytdl from 'youtube-dl-exec';
 import yts from 'yt-search'
 import fs from 'fs';
 import path from 'path';
+import ffmpeg from 'ffmpeg-static';
 class YouTubeDownloader {
 
     async getVideoDetail(name, artistName) {
@@ -20,7 +21,7 @@ class YouTubeDownloader {
                         titleLower.includes('lyric') ||
                         titleLower.includes('music') ||
                         titleLower.includes('song')) &&
-                    durationInSeconds <= 600; // 10 minutes = 600 seconds
+                    durationInSeconds <= 600;
 
                 return isMusicRelated;
             });
@@ -37,7 +38,6 @@ class YouTubeDownloader {
 
     async validateVideo(url) {
         try {
-            // Use youtube-dl to extract video info
             const info = await ytdl(url, {
                 dumpSingleJson: true,
                 noWarnings: true,
@@ -45,15 +45,12 @@ class YouTubeDownloader {
                 noCheckCertificate: true
             });
 
-            // Parse video duration (in seconds)
             const duration = parseInt(info.duration);
 
-            // Validate duration (less than 10 minutes = 600 seconds)
             if (duration > 600) {
                 return { status: false, message: 'Video duration exceeds 10 minutes' };
             }
 
-            // Check video category
             const categories = info.categories || [];
             const tags = info.tags || [];
             const isMusicCategory =
@@ -83,11 +80,12 @@ class YouTubeDownloader {
                 output: outputFilePath,
                 extractAudio: true,
                 audioFormat: 'mp3',
-                audioQuality: 0,
+                audioQuality: 5,
                 noWarnings: true,
                 noCallHome: true,
                 noCheckCertificate: true,
-                preferFreeFormats: true
+                preferFreeFormats: true,
+                ffmpegLocation: ffmpeg
             };
 
             await ytdl(url, options);

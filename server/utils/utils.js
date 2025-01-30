@@ -57,20 +57,24 @@ const fetchByUrlType = async (songData) => {
 
 export const fetchNextTrack = async () => {
     // Fetch queue list from json.
-    let songResult;
     const songQueue = new SongQueueManager();
-    const getFirst = songQueue.getFirstFromQueue();
-
-    // If Queue is empty, fetch next track randomly from hit songs.
-    if (!getFirst) {
-        songResult = await emptySongQueueHandler();
-        return songResult;
+    try {
+        let songResult;
+        const getFirst = songQueue.getFirstFromQueue();
+    
+        // If Queue is empty, fetch next track randomly from hit songs.
+        if (!getFirst) {
+            songResult = await emptySongQueueHandler();
+            return songResult;
+        }
+    
+        // Fetch next track from given URL type.
+        songResult = await fetchByUrlType(getFirst);
+        songQueue.removeFromFront();
+        return songResult; 
+    } catch (error) {
+        songQueue.removeFromFront();
     }
-
-    // Fetch next track from given URL type.
-    songResult = await fetchByUrlType(getFirst);
-    songQueue.removeFromFront();
-    return songResult;
 }
 
 
@@ -164,16 +168,16 @@ export const generateSongMetadata = async (songName) => {
 
         const metadata = createMetadata(songName, spotifyResult.name);
 
-        const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
-        if (jioSaavnResult) {
-            return updateMetadata(
-                metadata,
-                "jiosavan",
-                jioSaavnResult.title,
-                jioSaavnResult.url,
-                "jiosavan"
-            );
-        }
+        // const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
+        // if (jioSaavnResult) {
+        //     return updateMetadata(
+        //         metadata,
+        //         "jiosavan",
+        //         jioSaavnResult.title,
+        //         jioSaavnResult.url,
+        //         "jiosavan"
+        //     );
+        // }
 
         const youtubeResult = await searchYouTubeSong(spotifyResult.name);
         if (youtubeResult) {
