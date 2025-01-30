@@ -138,34 +138,36 @@ const searchYouTubeSong = async (spotifyName) => {
 };
 
 // Create metadata object
-const createMetadata = (originalName, spotifyName) => ({
+const createMetadata = (originalName, spotifyName, requestedBy) => ({
     title: '',
     url: '',
     urlType: '',
     originalName,
-    spotifyName
+    spotifyName,
+    requestedBy
 });
 
 // Update metadata with source info
-const updateMetadata = (metadata, source, title, url, type) => {
+const updateMetadata = (metadata, source, title, url, type, duration) => {
     checkSimilarity(metadata.originalName, title, type);
     return {
         ...metadata,
         title,
         url,
-        urlType: type
+        urlType: type,
+        duration: duration
     };
 };
 
 // Main function to generate metadata
-export const generateSongMetadata = async (songName) => {
+export const generateSongMetadata = async (songName, requestedBy) => {
     try {
         const spotifyResult = await searchSpotifySong(songName);
         if (!spotifyResult) {
             throw new Error("Could not find song on Spotify");
         }
         console.log("spotify result: " + spotifyResult.name);
-        const metadata = createMetadata(songName, spotifyResult.name);
+        const metadata = createMetadata(songName, spotifyResult.name, requestedBy);
 
         const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
         if (jioSaavnResult) {

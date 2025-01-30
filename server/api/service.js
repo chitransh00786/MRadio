@@ -5,51 +5,40 @@ import { generateSongMetadata } from "../utils/utils.js";
 class Service {
 
     async getCurrentSong() {
-        return queue.tracks[queue.index];
+        const { title } = queue.tracks[queue.index];
+        return { title, duration: "" }
     }
 
     async getQueueList() {
-        return queue.tracks;
+        const songQueue = new SongQueueManager();
+        const trackList = queue.tracks;
+        const queueSongList = songQueue.printQueue();
+        const response = [...trackList, ...queueSongList].map((item, index) => ({
+            id: index + 1,
+            title: item.title,
+            duration: ""
+        }));
+        return response;
     }
 
     async getUpcomingSong() {
-        return queue.tracks[(queue.index + 1) % queue.tracks.length];
+        const { title } = queue.tracks[(queue.index + 1) % queue.tracks.length];
+        return { title }
     }
 
     async skip() {
-        if (!queue.tracks.length || queue.isTransitioning) {
-            console.log("Skip not possible at this moment")
-            throw new Error("Skip not possible at this moment");
-        }
-        this.isTransitioning = true;
-        queue.playing = false;
-
-        try {
-            await queue.cleanupCurrentStream();
-
-            const silenceBuffer = Buffer.alloc(4096);
-            queue.broadcast(silenceBuffer);
-
-            setTimeout(() => {
-                queue.playing = true;
-                queue.play(true);
-                queue.isTransitioning = false;
-            }, 200);
-            return true;
-        } catch (error) {
-            console.error("Error while skipping: ", error)
-            this.isTransitioning = false;
-        }
+        await queue.skip();
+        return true;
     }
 
-    async addTrack(songName) {
-        const metadata = await generateSongMetadata(songName);
+    async addSongToQueue({ songName, requestedBy = "anonymous" }) {
+        const metadata = await generateSongMetadata(songName, requestedBy);
         const songQueue = new SongQueueManager();
         songQueue.addToQueue(metadata);
-        return {title: metadata.title}
+        return { title: metadata.title, duration: "" }
     }
 
-    async addSongToQueue() {
+    async addSongToTop() {
         // TODO: Implement adding song to queue.
     }
 }

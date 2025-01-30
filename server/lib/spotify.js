@@ -2,7 +2,7 @@ import axios from 'axios';
 import qs from 'querystring';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { checkSimilarity } from '../utils/utils';
+import { checkSimilarity } from '../utils/utils.js';
 
 dotenv.config();
 
@@ -76,13 +76,14 @@ class SpotifyAPI {
     async searchTrack(query, retryCount = 1) {
         try {
             const accessToken = await this.getValidAccessToken();
-            const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10&include_external=audio`;
+            const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1&include_external=audio`;
+            console.log("url ", url);
             const response = await axios.get(url, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
-            const foundMusic = response.data.tracks.items.find(track => checkSimilarity(query, track) > 60);
+            const foundMusic = response.data.tracks.items.find(track => checkSimilarity(query, track.name) > 60);
             return foundMusic;
         } catch (error) {
             console.error('Error searching for track:', error.response ? error.response.data : error.message);

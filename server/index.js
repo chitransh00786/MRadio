@@ -2,10 +2,7 @@ import express from "express";
 import http from "http";
 import { Server as IOServer } from "socket.io";
 import queue from "./lib/queue.js";
-import SpotifyAPI from "./lib/spotify.js";
-import YouTubeDownloader from "./lib/download.js";
-import { generateSongMetadata } from "./utils/utils.js";
-import SongQueueManager from "./utils/songQueueManager.js";
+import router from "./api/router.js";
 
 const PORT = 9126;
 const app = express();
@@ -39,30 +36,7 @@ app.get("/", function (req, res) {
             socket.broadcast.emit("stream", packet);
         });
     });
-
-    app.get("/skip", (req, res) => {
-        queue.skip();
-        return res.json({ message: "Skip successfull" })
-    })
-
-    app.post("/add", express.json(), async (req, res) => {
-        try {
-            const { songName } = req.body;
-            const metadata = await generateSongMetadata(songName);
-            const songQueue = new SongQueueManager();
-            songQueue.addToQueue(metadata);
-            return res.json({ message: "Track added successfully", title: metadata.title })
-
-        } catch (error) {
-            console.log("error")
-        }
-    })
-
-    app.get("/queue", (req, res) => {
-        const songList = queue.getAllQueueList();
-        res.json({ songlist: songList });
-    })
-
+    app.use("/api", router);
     // HTTP stream for music
     app.get("/stream", (req, res) => {
         const { id, client } = queue.addClient();

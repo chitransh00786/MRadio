@@ -102,10 +102,7 @@ class SongQueueManager {
     }
 
     printQueue() {
-        return this.queue.map((item, index) => ({
-            id: index + 1,
-            ...item
-        }));
+        return this.queue;
     }
 }
 
