@@ -91,7 +91,7 @@ class YouTubeDownloader {
             };
 
             await ytdl(url, options);
-            return { filepath: outputFilePath }
+            return { url: outputFilePath }
 
         } catch (error) {
             console.error('Download error:', error);

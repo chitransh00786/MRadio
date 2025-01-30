@@ -38,12 +38,12 @@ const emptySongQueueHandler = async () => {
 
 const downloadFromYoutube = async (songData) => {
     const yt = new YouTubeDownloader();
-    const { filepath } = await yt.downloadVideo(songData.url, songData.title);
-    return { filepath: filepath, title: songData.title };
+    const { url } = await yt.downloadVideo(songData.url, songData.title);
+    return { url: url, title: songData.title };
 }
 
 const downloadFromJioSavan = async (songData) => {
-    return { filepath: songData.url, title: songData.title }
+    return { url: songData.url, title: songData.title }
 }
 
 const fetchByUrlType = async (songData) => {
@@ -69,7 +69,7 @@ export const fetchNextTrack = async () => {
 
     // Fetch next track from given URL type.
     songResult = await fetchByUrlType(getFirst);
-
+    songQueue.removeFromFront();
     return songResult;
 }
 
@@ -91,7 +91,7 @@ const searchSpotifySong = async (songName) => {
         const spotify = new SpotifyAPI();
         const songDetail = await spotify.searchTrack(songName);
         const { name, id } = songDetail;
-        
+
         if (!name) {
             throw new Error("Invalid song name");
         }
@@ -122,12 +122,12 @@ const searchYouTubeSong = async (spotifyName) => {
         const yt = new YouTubeDownloader();
         const { url, title } = await yt.getVideoDetail(spotifyName);
         const { status, message } = await yt.validateVideo(url);
-        
+
         if (!status) {
             throw new Error(message);
         }
-        
-        return {url, title};
+
+        return { url, title };
     } catch (error) {
         console.error("YouTube search error:", error.message);
         return null;
@@ -164,16 +164,16 @@ export const generateSongMetadata = async (songName) => {
 
         const metadata = createMetadata(songName, spotifyResult.name);
 
-        // const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
-        // if (jioSaavnResult) {
-        //     return updateMetadata(
-        //         metadata,
-        //         "jiosavan",
-        //         jioSaavnResult.title,
-        //         jioSaavnResult.url,
-        //         "jiosavan"
-        //     );
-        // }
+        const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
+        if (jioSaavnResult) {
+            return updateMetadata(
+                metadata,
+                "jiosavan",
+                jioSaavnResult.title,
+                jioSaavnResult.url,
+                "jiosavan"
+            );
+        }
 
         const youtubeResult = await searchYouTubeSong(spotifyResult.name);
         if (youtubeResult) {
@@ -194,7 +194,7 @@ export const generateSongMetadata = async (songName) => {
 };
 
 
-(async () => {
-    const meta = await generateSongMetadata("tum mile dil kile")
-    console.log(meta);
-})();
+// (async () => {
+//     const meta = await generateSongMetadata("tum mile dil kile")
+//     console.log(meta);
+// })();

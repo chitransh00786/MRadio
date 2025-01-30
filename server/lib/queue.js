@@ -28,14 +28,14 @@ class Queue {
             return;
         }
         this.isDownloading = true;
-        
+
         Promise.resolve().then(async () => {
             try {
                 while (this.tracks.length < this.minQueueSize) {
                     const song = await fetchNextTrack();
                     if (this.tracks.length < this.minQueueSize) {
                         this.tracks.push({
-                            filepath: song.url,
+                            url: song.url,
                             bitrate: 128,
                             title: song.title
                         });
@@ -76,7 +76,7 @@ class Queue {
         if (this.currentTrack) {
             const metadata = {
                 type: 'metadata',
-                track: this.currentTrack.filepath.split('/').pop(),
+                track: this.currentTrack.url.split('/').pop(),
                 index: this.index
             };
             client.write(JSON.stringify(metadata));
@@ -99,24 +99,6 @@ class Queue {
         return this.tracks;
     }
 
-    async addTrack(filepath) {
-        try {
-            if (pathHelper.checkExtension(filepath, ".mp3")) {
-                throw new Error("Only MP3 files are supported");
-            }
-
-            // Check bitrate and add track metadata
-            const bitrate = await this.getTrackBitrate(filepath);
-            const track = { filepath, bitrate };
-            this.tracks.push(track);
-            console.log(`Track added: ${filepath}`);
-            return track;
-        } catch (error) {
-            console.error(`Error adding track: ${error.message}`);
-            throw error;
-        }
-    }
-
     async loadTracks(dir) {
         try {
             // Reset queue state
@@ -130,7 +112,8 @@ class Queue {
 
             // Load first track
             const song = await fetchNextTrack()
-            this.tracks.push({ filepath: song.url, bitrate: 128, title: song.title });
+            console.log(song, "song detail");
+            this.tracks.push({ url: song.url, bitrate: 128, title: song.title });
             console.log(`Added initial track: ${song.title}`);
 
             this.ensureQueueSize();
@@ -143,9 +126,9 @@ class Queue {
         }
     }
 
-    async getTrackBitrate(filepath) {
+    async getTrackBitrate(url) {
         return new Promise((resolve) => {
-            ffmpeg.ffprobe(filepath, (err, metadata) => {
+            ffmpeg.ffprobe(url, (err, metadata) => {
                 if (err || !metadata?.format?.bit_rate) {
                     return resolve(128000); // Default to 128kbps
                 }
@@ -157,7 +140,7 @@ class Queue {
     async cleanupCurrentStream() {
         // Immediately stop broadcasting any data
         this.playing = false;
-        
+
         return new Promise((resolve) => {
             const cleanup = () => {
                 // Immediately kill FFmpeg process first to stop audio generation
@@ -208,7 +191,7 @@ class Queue {
         // Broadcast track change to all clients
         const metadata = {
             type: 'metadata',
-            track: this.currentTrack.filepath.split('/').pop(),
+            track: this.currentTrack.url.split('/').pop(),
             title: this.currentTrack.title || '',
             index: this.index
         };
@@ -229,9 +212,9 @@ class Queue {
         try {
             this.playing = false;
             console.log("Skipping song:", this.currentTrack?.title || 'Unknown');
-            
+
             const hasNextTrack = this.tracks.length > 1;
-            
+
             await this.cleanupCurrentStream();
             this.tracks.shift();
             this.index = 0;
@@ -242,7 +225,7 @@ class Queue {
             } else {
                 const maxWaitTime = 2000;
                 const startTime = Date.now();
-                
+
                 while (this.tracks.length === 0) {
                     if (Date.now() - startTime > maxWaitTime) {
                         console.log("No tracks available after waiting");
@@ -317,7 +300,7 @@ class Queue {
         const ffmpegArgs = [
             '-hide_banner',
             '-loglevel', 'error',
-            '-i', track.filepath,
+            '-i', track.url,
             '-vn',
             '-acodec', 'libmp3lame',
             '-ab', '128k',
@@ -393,7 +376,7 @@ class Queue {
 
                 const maxWaitTime = 5000;
                 const startTime = Date.now();
-                
+
                 while (this.tracks.length === 0) {
                     if (Date.now() - startTime > maxWaitTime) {
                         console.log("Timeout waiting for next track");
