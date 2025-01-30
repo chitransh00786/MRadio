@@ -73,10 +73,10 @@ class SpotifyAPI {
         return tokenData.accessToken;
     }
 
-    async searchTrack(query, retryCount = 1) {
+    async searchTrack(query) {
         try {
             const accessToken = await this.getValidAccessToken();
-            const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=1&include_external=audio`;
+            const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10&include_external=audio`;
             console.log("url ", url);
             const response = await axios.get(url, {
                 headers: {

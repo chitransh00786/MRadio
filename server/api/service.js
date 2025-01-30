@@ -5,8 +5,8 @@ import { generateSongMetadata } from "../utils/utils.js";
 class Service {
 
     async getCurrentSong() {
-        const { title } = queue.tracks[queue.index];
-        return { title, duration: "" }
+        const { title, duration, requestedBy } = queue.tracks[queue.index];
+        return { title, duration, requestedBy }
     }
 
     async getQueueList() {
@@ -16,14 +16,15 @@ class Service {
         const response = [...trackList, ...queueSongList].map((item, index) => ({
             id: index + 1,
             title: item.title,
-            duration: ""
+            duration: item.duration,
+            requestedBy: item.requestedBy
         }));
         return response;
     }
 
     async getUpcomingSong() {
-        const { title } = queue.tracks[(queue.index + 1) % queue.tracks.length];
-        return { title }
+        const { title, duration, requestedBy } = queue.tracks[(queue.index + 1) % queue.tracks.length];
+        return { title, duration, requestedBy }
     }
 
     async skip() {
@@ -35,7 +36,7 @@ class Service {
         const metadata = await generateSongMetadata(songName, requestedBy);
         const songQueue = new SongQueueManager();
         songQueue.addToQueue(metadata);
-        return { title: metadata.title, duration: "" }
+        return { title: metadata.title, duration: metadata.duration, requestedBy };
     }
 
     async addSongToTop() {

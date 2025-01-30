@@ -4,7 +4,6 @@ import Throttle from "throttle";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
-import pathHelper from "../helper/path-helper.js";
 import { fetchNextTrack } from "../utils/utils.js";
 import fsHelper from "../helper/fs-helper.js";
 
@@ -40,7 +39,9 @@ class Queue {
                         this.tracks.push({
                             url: song.url,
                             bitrate: songBitrate,
-                            title: song.title
+                            title: song.title,
+                            duration: song?.duration ?? "00:00",
+                            requestedBy: song?.requestedBy ?? "anonymous"
                         });
                         console.log(`Downloaded and added new track: ${song.title}`);
                     }
@@ -116,7 +117,7 @@ class Queue {
             // Load first track
             const song = await fetchNextTrack()
             const songBitrate = await this.getTrackBitrate(song.url)
-            this.tracks.push({ url: song.url, bitrate: songBitrate, title: song.title });
+            this.tracks.push({ url: song.url, bitrate: songBitrate, title: song.title, duration: song?.duration, requestedBy: song?.requestedBy ?? "anonymous" });
             console.log(`Added initial track: ${song.title}`);
 
             this.ensureQueueSize();
@@ -219,7 +220,7 @@ class Queue {
             const hasNextTrack = this.tracks.length > 1;
 
             await this.cleanupCurrentStream();
-            
+
             // Delete track file if it exists in tracks folder
             const currentTrack = this.tracks[0];
             if (currentTrack && currentTrack.url.startsWith('tracks/')) {
@@ -228,7 +229,7 @@ class Queue {
                     console.log(`Deleted track file: ${currentTrack.url}`);
                 }
             }
-            
+
             this.tracks.shift();
             this.index = 0;
 

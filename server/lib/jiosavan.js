@@ -1,7 +1,7 @@
 import axios from "axios";
 import { JIO_SAVAN_SONG_SEARCH, JIO_SAVAN_TOP50 } from "../utils/constant.js";
 import { createDownloadLinks } from "../utils/crypto.js";
-import { getRandomNumber } from "../utils/utils.js";
+import { durationFormatter, getRandomNumber } from "../utils/utils.js";
 
 class JioSavan {
     async getRandomFromTop50(retryCount = 1) {
@@ -13,12 +13,14 @@ class JioSavan {
             if (!songData) throw new Error("No Song Data Found");
 
             const { title, more_info } = songData;
-            const { encrypted_media_url } = more_info;
+            const { encrypted_media_url, duration } = more_info;
             const songLink = createDownloadLinks(encrypted_media_url);
             return {
                 title,
                 url: songLink[3].url,
-                quality: songLink[3].quality
+                quality: songLink[3].quality,
+                duration: durationFormatter(duration),
+                requestedBy: "auto"
             }
         } catch (error) {
             console.log(error);
@@ -36,12 +38,13 @@ class JioSavan {
             const { title, more_info } = response.data.results[0];
 
             if (!title) throw new Error("No Song Data Found");
-            const { encrypted_media_url } = more_info;
+            const { encrypted_media_url, duration } = more_info;
             const songLink = createDownloadLinks(encrypted_media_url);
             return {
                 title,
                 url: songLink[3].url,
-                quality: songLink[3].quality
+                quality: songLink[3].quality,
+                duration: duration
             }
         } catch (error) {
             console.log(error);

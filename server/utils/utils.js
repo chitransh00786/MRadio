@@ -7,6 +7,11 @@ import { token_set_ratio } from 'fuzzball';
 import { SONG_QUEUE_LOCATION, SPOTIFY_TOKEN } from "./constant.js";
 import SongQueueManager from "./songQueueManager.js";
 
+/**
+ * ====================
+ * Common Utils
+ * ====================
+ */
 export const getQueueListJson = () => {
     return fsHelper.readFromJson(SONG_QUEUE_LOCATION, []);
 }
@@ -27,24 +32,63 @@ export const getSpotifyConfigJson = () => {
 export const getRandomNumber = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+export const durationFormatter = (duration) => {
+    const minutes = Math.floor(duration / 60);
+    const seconds = duration % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
 
-// Utils Related to fetching songs.
+const SIMILARITY_THRESHOLD = 60;
+
+export const checkSimilarity = (original, found, source) => {
+    const similarity = calculateSimilarity(original, found);
+    if (similarity < SIMILARITY_THRESHOLD) {
+        console.log(`similarity less than ${SIMILARITY_THRESHOLD}: \n original: ${original} \n ${source}: found`);
+    }
+    return similarity;
+};
+
+/**
+ * ===========================
+ * Next song Fetching Utils
+ * ===========================
+ */
+
+/**
+ * @description Fetch the song when song queue is empty.
+ * @returns 
+ */
 const emptySongQueueHandler = async () => {
     const jio = new JioSavan();
     const song = await jio.getRandomFromTop50();
     return song;
 }
 
+/**
+ * @description Download song from youtube
+ * @param {*} songData 
+ * @returns 
+ */
 const downloadFromYoutube = async (songData) => {
     const yt = new YouTubeDownloader();
     const { url } = await yt.downloadVideo(songData.url, songData.title);
     return { url: url, title: songData.title };
 }
 
+/**
+ * @description Download song from jiosavan, just return the url.
+ * @param {*} songData 
+ * @returns 
+ */
 const downloadFromJioSavan = async (songData) => {
     return { url: songData.url, title: songData.title }
 }
 
+/**
+ * @description Fetching song file by the source type.
+ * @param {*} songData 
+ * @returns 
+ */
 const fetchByUrlType = async (songData) => {
     switch (songData.urlType) {
         case 'youtube':
@@ -54,6 +98,10 @@ const fetchByUrlType = async (songData) => {
     }
 }
 
+/**
+ * @description Next song Fetch Logic
+ * @returns 
+ */
 export const fetchNextTrack = async () => {
     // Fetch queue list from json.
     const songQueue = new SongQueueManager();
@@ -70,25 +118,22 @@ export const fetchNextTrack = async () => {
         // Fetch next track from given URL type.
         songResult = await fetchByUrlType(getFirst);
         songQueue.removeFromFront();
-        return songResult;
+        return {...songResult, requestedBy: getFirst.requestedBy};
     } catch (error) {
         songQueue.removeFromFront();
     }
 }
 
-
-
-const SIMILARITY_THRESHOLD = 60;
-
-export const checkSimilarity = (original, found, source) => {
-    const similarity = calculateSimilarity(original, found);
-    if (similarity < SIMILARITY_THRESHOLD) {
-        console.log(`similarity less than ${SIMILARITY_THRESHOLD}: \n original: ${original} \n ${source}: found`);
-    }
-    return similarity;
-};
-
-// Search song on Spotify
+/**
+ * ===========================
+ * Metadata Fetching Utils
+ * ===========================
+ */
+/**
+ * @description Search song on spotify
+ * @param {*} songName 
+ * @returns 
+ */
 const searchSpotifySong = async (songName) => {
     try {
         const spotify = new SpotifyAPI();
@@ -107,7 +152,11 @@ const searchSpotifySong = async (songName) => {
     }
 };
 
-// Search song on JioSaavn
+/**
+ * @description Search song on JioSavan
+ * @param {*} spotifyName 
+ * @returns 
+ */
 const searchJioSaavnSong = async (spotifyName) => {
     try {
         const jio = new JioSavan();
@@ -119,18 +168,20 @@ const searchJioSaavnSong = async (spotifyName) => {
     }
 };
 
-// Search song on YouTube
+/**
+ * @description Search Song on Youtube
+ */
 const searchYouTubeSong = async (spotifyName) => {
     try {
         const yt = new YouTubeDownloader();
-        const { url, title } = await yt.getVideoDetail(spotifyName);
+        const { url, title, duration } = await yt.getVideoDetail(spotifyName);
         const { status, message } = await yt.validateVideo(url);
 
         if (!status) {
             throw new Error(message);
         }
 
-        return { url, title };
+        return { url, title, duration };
     } catch (error) {
         console.error("YouTube search error:", error.message);
         return null;
@@ -138,28 +189,49 @@ const searchYouTubeSong = async (spotifyName) => {
 };
 
 // Create metadata object
+/**
+ * @description Create Initial metadata object.
+ * @param {*} originalName 
+ * @param {*} spotifyName 
+ * @param {*} requestedBy 
+ * @returns 
+ */
 const createMetadata = (originalName, spotifyName, requestedBy) => ({
     title: '',
     url: '',
     urlType: '',
+    duration: '',
     originalName,
     spotifyName,
     requestedBy
 });
 
-// Update metadata with source info
-const updateMetadata = (metadata, source, title, url, type, duration) => {
+/**
+ * @description Update the metadata object.
+ * @param {*} metadata 
+ * @param {*} type 
+ * @param {*} title 
+ * @param {*} url 
+ * @param {*} duration 
+ * @returns 
+ */
+const updateMetadata = (metadata, type, title, url, duration) => {
     checkSimilarity(metadata.originalName, title, type);
     return {
         ...metadata,
         title,
         url,
         urlType: type,
-        duration: duration
+        duration: durationFormatter(duration)
     };
 };
 
-// Main function to generate metadata
+/**
+ * @description Main function to generate metadata
+ * @param {*} songName 
+ * @param {*} requestedBy 
+ * @returns 
+ */
 export const generateSongMetadata = async (songName, requestedBy) => {
     try {
         const spotifyResult = await searchSpotifySong(songName);
@@ -171,24 +243,12 @@ export const generateSongMetadata = async (songName, requestedBy) => {
 
         const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
         if (jioSaavnResult) {
-            return updateMetadata(
-                metadata,
-                "jiosavan",
-                jioSaavnResult.title,
-                jioSaavnResult.url,
-                "jiosavan"
-            );
+            return updateMetadata(metadata, "jiosavan", jioSaavnResult.title, jioSaavnResult.url, jioSaavnResult.duration);
         }
 
         const youtubeResult = await searchYouTubeSong(spotifyResult.name);
         if (youtubeResult) {
-            return updateMetadata(
-                metadata,
-                "youtube",
-                youtubeResult.title,
-                youtubeResult.url,
-                "youtube"
-            );
+            return updateMetadata(metadata, "youtube", youtubeResult.title, youtubeResult.url, youtubeResult.duration);
         }
         throw new Error("Song not found on any platform");
     } catch (error) {
