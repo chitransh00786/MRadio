@@ -38,60 +38,15 @@ app.get("/", function (req, res) {
         });
     });
 
-    app.get("/status", (req, res) => {
-        const status = queue.getCurrentSongStatus();
-        return res.json(status);
-    })
-
     app.get("/skip", (req, res) => {
         queue.skip();
         return res.json({ message: "Skip successfull" })
     })
 
-    app.get("/current", (req, res) => {
-        const status = queue.getCurrentSongStatus();
-        res.json(status);
-    });
-
-
-    app.get("/upcoming", (req, res) => {
-        const status = queue.getUpcomingSongStatus();
-        res.json(status);
-    });
-
     app.get("/queue", (req, res) => {
         const songList = queue.getAllQueueList();
         res.json({ songlist: songList });
     })
-
-    app.post("/add", express.json(), async (req, res) => {
-        try {
-            const { songName } = req.body;
-            if (!songName) {
-                return res.status(400).json({ message: "Song name is required." });
-            }
-            const spotify = new SpotifyAPI();
-            const songDetail = await spotify.searchTrack(songName);
-            const { name, id } = songDetail;
-            console.log("song Detail: ", songDetail, name, id);
-            if (!name) {
-                return res.status(400).json({ message: "Song not found." });
-            }
-            const yt = new YouTubeDownloader();
-            const { filepath } = await yt.downloadVideo(name);
-            if (!filepath) {
-                return res.status(400).json({ message: "Unable to find video." });
-            }
-            console.log(filepath);
-            const result = await queue.addTrack(filepath);
-            res.json(result);
-        } catch (error) {
-            console.log("error downloading", error.message);
-            res.status(500).json({ message: "Error Downloading vieo.", error: error })
-        }
-    });
-
-
 
     // HTTP stream for music
     app.get("/stream", (req, res) => {

@@ -30,7 +30,7 @@ class YouTubeDownloader {
 
             // Validate duration (less than 10 minutes = 600 seconds)
             if (duration > 600) {
-                return { status: false, data: null, message: 'Video duration exceeds 10 minutes' };
+                return { status: false, message: 'Video duration exceeds 10 minutes' };
             }
 
             // Check video category
@@ -41,13 +41,13 @@ class YouTubeDownloader {
                 tags.some(tag => tag.toLowerCase().includes('music'));
 
             if (!isMusicCategory) {
-                return { status: false, data: null, message: 'Video is not in the Music category' };
+                return { status: false, message: 'Video is not in the Music category' };
             }
 
-            return { status: true, data: info, message: "Successfull" };
+            return { status: true, message: "Successfull" };
         } catch (error) {
             console.error('Video validation error:', error);
-            return { status: false, data: null, message: "Video validation error: " }
+            return { status: false, message: "Video validation error: " }
         }
     }
 
