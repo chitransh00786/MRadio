@@ -6,15 +6,35 @@ class YouTubeDownloader {
 
     async getVideoDetail(name, artistName) {
         try {
-            const r = await yts({ query: `${name} - ${artistName} audio`, category: 'music' })
+            const r = await yts({ query: `${name} - ${artistName} official audio song music`, category: 'music' });
             if (r.videos?.length === 0) {
                 throw new Error('No video found for the given name and artist');
             }
-            return r.videos[0];
+
+            const musicVideo = r.videos.find(video => {
+                const titleLower = video.title.toLowerCase();
+                const durationInSeconds = video.seconds;
+
+                const isMusicRelated =
+                    (titleLower.includes('official audio') ||
+                        titleLower.includes('lyric') ||
+                        titleLower.includes('music') ||
+                        titleLower.includes('song')) &&
+                    durationInSeconds <= 600; // 10 minutes = 600 seconds
+
+                return isMusicRelated;
+            });
+
+            if (!musicVideo) {
+                throw new Error('No music-specific video found in search results');
+            }
+            return musicVideo;
         } catch (error) {
             console.log("Error getting details: " + error.message);
+            throw error;
         }
     }
+
     async validateVideo(url) {
         try {
             // Use youtube-dl to extract video info
