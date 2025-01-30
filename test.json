@@ -1,0 +1,192 @@
+{
+    "total": 9681,
+    "start": 1,
+    "results": [
+        {
+            "id": "BeXBcbVK",
+            "title": "Believer",
+            "subtitle": "Imagine Dragons - Evolve",
+            "header_desc": "",
+            "type": "song",
+            "perma_url": "https:\/\/www.jiosaavn.com\/song\/believer\/Mg0zcxdSYXg",
+            "image": "http:\/\/c.saavncdn.com\/248\/Evolve-English-2017-20180716230950-150x150.jpg",
+            "language": "english",
+            "year": "2018",
+            "play_count": "85037310",
+            "explicit_content": "0",
+            "list_count": "0",
+            "list_type": "",
+            "list": "",
+            "more_info": {
+                "music": "Dan Reynolds, Wayne Sermon, Ben Mckee, Daniel Platzman, Robin Fredriksson, Mattias Larsson, Justin Tranter",
+                "album_id": "13435951",
+                "album": "Evolve",
+                "label": "Kid Ina Korner \/ Interscope",
+                "label_id": null,
+                "origin": "search",
+                "is_dolby_content": false,
+                "320kbps": "true",
+                "encrypted_media_url": "iPPGVzyogeiPwpro65A0eUaQggN+8+J4GeIIk2qfbwRx8Cg4EFT1ER6EfKk0EQMAFR1fbSnml9qIFdPhpg8WwoPzFaL\/aK97",
+                "encrypted_cache_url": "",
+                "encrypted_drm_cache_url": "",
+                "encrypted_drm_media_url": "ID2ieOjCrwdjlkMElYlzWCptgNdUpWD8OrsINkFN\/mwb5iM1EMVDg3pnHS6LOnyXP5z6nTDb7VZ93WxGoOuZUI92mytrdt3FDnQW0nglPS4=",
+                "album_url": "https:\/\/www.jiosaavn.com\/album\/evolve\/gvCWqZLfVbs_",
+                "duration": "202",
+                "rights": {
+                    "code": "0",
+                    "cacheable": "true",
+                    "delete_cached_object": "false",
+                    "reason": ""
+                },
+                "cache_state": "false",
+                "has_lyrics": "false",
+                "lyrics_snippet": "",
+                "starred": "false",
+                "copyright_text": "\u2117 2017 KIDinaKORNER\/Interscope Records",
+                "artistMap": {
+                    "primary_artists": [
+                        {
+                            "id": "599452",
+                            "name": "Imagine Dragons",
+                            "role": "primary_artists",
+                            "image": "https:\/\/c.saavncdn.com\/artists\/Imagine_Dragons_150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/imagine-dragons-songs\/f0aFxsa231o_"
+                        }
+                    ],
+                    "featured_artists": [],
+                    "artists": [
+                        {
+                            "id": "599453",
+                            "name": "Dan Reynolds",
+                            "role": "music",
+                            "image": "https:\/\/c.saavncdn.com\/048\/Skipping-Stones-English-2018-20180620230710-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/dan-reynolds-songs\/xoeLrr0aTEU_"
+                        },
+                        {
+                            "id": "599454",
+                            "name": "Wayne Sermon",
+                            "role": "music",
+                            "image": "",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/wayne-sermon-songs\/,WHkVDnJnD8_"
+                        },
+                        {
+                            "id": "599455",
+                            "name": "Ben Mckee",
+                            "role": "music",
+                            "image": "",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/ben-mckee-songs\/EA7FaJms-k8_"
+                        },
+                        {
+                            "id": "914898",
+                            "name": "Daniel Platzman",
+                            "role": "music",
+                            "image": "https:\/\/c.saavncdn.com\/883\/Best-F-r-iends-Original-Motion-Picture-Soundtrack-English-2019-20190128215540-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/daniel-platzman-songs\/hOWrEJ6eC9I_"
+                        },
+                        {
+                            "id": "683491",
+                            "name": "Robin Fredriksson",
+                            "role": "music",
+                            "image": "",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/robin-fredriksson-songs\/jRGk4sF83Ko_"
+                        },
+                        {
+                            "id": "634862",
+                            "name": "Mattias Larsson",
+                            "role": "music",
+                            "image": "https:\/\/c.saavncdn.com\/277\/Kom-Swedish-2017-20171009155644-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/mattias-larsson-songs\/d6thUM5GwSE_"
+                        },
+                        {
+                            "id": "633532",
+                            "name": "Justin Tranter",
+                            "role": "music",
+                            "image": "https:\/\/c.saavncdn.com\/916\/The-Lego-Batman-Movie-Original-Motion-Picture-Soundtrack-English-2017-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/justin-tranter-songs\/MUdaah321CU_"
+                        },
+                        {
+                            "id": "599452",
+                            "name": "Imagine Dragons",
+                            "role": "singer",
+                            "image": "https:\/\/c.saavncdn.com\/artists\/Imagine_Dragons_150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/imagine-dragons-songs\/f0aFxsa231o_"
+                        },
+                        {
+                            "id": "599453",
+                            "name": "Dan Reynolds",
+                            "role": "lyricist",
+                            "image": "https:\/\/c.saavncdn.com\/048\/Skipping-Stones-English-2018-20180620230710-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/dan-reynolds-songs\/xoeLrr0aTEU_"
+                        },
+                        {
+                            "id": "599454",
+                            "name": "Wayne Sermon",
+                            "role": "lyricist",
+                            "image": "",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/wayne-sermon-songs\/,WHkVDnJnD8_"
+                        },
+                        {
+                            "id": "599455",
+                            "name": "Ben Mckee",
+                            "role": "lyricist",
+                            "image": "",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/ben-mckee-songs\/EA7FaJms-k8_"
+                        },
+                        {
+                            "id": "914898",
+                            "name": "Daniel Platzman",
+                            "role": "lyricist",
+                            "image": "https:\/\/c.saavncdn.com\/883\/Best-F-r-iends-Original-Motion-Picture-Soundtrack-English-2019-20190128215540-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/daniel-platzman-songs\/hOWrEJ6eC9I_"
+                        },
+                        {
+                            "id": "683491",
+                            "name": "Robin Fredriksson",
+                            "role": "lyricist",
+                            "image": "",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/robin-fredriksson-songs\/jRGk4sF83Ko_"
+                        },
+                        {
+                            "id": "634862",
+                            "name": "Mattias Larsson",
+                            "role": "lyricist",
+                            "image": "https:\/\/c.saavncdn.com\/277\/Kom-Swedish-2017-20171009155644-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/mattias-larsson-songs\/d6thUM5GwSE_"
+                        },
+                        {
+                            "id": "633532",
+                            "name": "Justin Tranter",
+                            "role": "lyricist",
+                            "image": "https:\/\/c.saavncdn.com\/916\/The-Lego-Batman-Movie-Original-Motion-Picture-Soundtrack-English-2017-150x150.jpg",
+                            "type": "artist",
+                            "perma_url": "https:\/\/www.jiosaavn.com\/artist\/justin-tranter-songs\/MUdaah321CU_"
+                        }
+                    ]
+                },
+                "release_date": null,
+                "label_url": "\/label\/kid-ina-korner-interscope-albums\/",
+                "vcode": "010912291154892",
+                "vlink": "https:\/\/jiotunepreview.jio.com\/content\/Converted\/010912291111348.mp3",
+                "triller_available": false,
+                "request_jiotune_flag": false,
+                "webp": "true"
+            },
+            "button_tooltip_info": []
+        }
+    ]
+}

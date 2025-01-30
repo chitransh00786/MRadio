@@ -30,7 +30,7 @@ class YouTubeDownloader {
 
             // Validate duration (less than 10 minutes = 600 seconds)
             if (duration > 600) {
-                throw new Error('Video duration exceeds 10 minutes');
+                return { status: false, data: null, message: 'Video duration exceeds 10 minutes' };
             }
 
             // Check video category
@@ -41,27 +41,22 @@ class YouTubeDownloader {
                 tags.some(tag => tag.toLowerCase().includes('music'));
 
             if (!isMusicCategory) {
-                throw new Error('Video is not in the Music category');
+                return { status: false, data: null, message: 'Video is not in the Music category' };
             }
 
-            return info;
+            return { status: true, data: info, message: "Successfull" };
         } catch (error) {
             console.error('Video validation error:', error);
-            throw error;
+            return { status: false, data: null, message: "Video validation error: " }
         }
     }
 
-    async downloadVideo(songName, outputPath = 'tracks') {
-        const { url, title } = await this.getVideoDetail(songName);
-        console.log(url);
-
-        // Validate video first
-        await this.validateVideo(url);
-
+    async downloadVideo(url, title, outputPath = 'tracks') {
         // Ensure output directory exists
         if (!fs.existsSync(outputPath)) {
             fs.mkdirSync(outputPath, { recursive: true });
         }
+
         const outputFilePath = path.join(outputPath, `${title}.mp3`);
         try {
             const options = {

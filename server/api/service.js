@@ -41,11 +41,11 @@ class Service {
     }
 
     async addTrack() {
-        // Implementation of adding new track
+        // TODO: Implementation of adding new track.
     }
 
     async addSongToQueue() {
-        
+        // TODO: Implement adding song to queue.
     }
 }
 

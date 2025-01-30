@@ -1,6 +1,7 @@
 import fsHelper from "../helper/fs-helper.js";
-import pathHelper from "../helper/path-helper.js";
+import YouTubeDownloader from "../lib/download.js";
 import JioSavan from "../lib/jiosavan.js";
+import SpotifyAPI from "../lib/spotify.js";
 
 import { SONG_QUEUE_LOCATION, SPOTIFY_TOKEN } from "./constant.js";
 import SongQueueManager from "./songQueueManager.js";
@@ -28,20 +29,22 @@ const emptySongQueueHandler = async () => {
     return song;
 }
 
-const fetchFromYoutube = async () => {
-
+const downloadFromYoutube = async (songData) => {
+    const yt = new YouTubeDownloader();
+    const { filepath } = await yt.downloadVideo(songData.url, songData.title);
+    return { filepath: filepath, title: songData.title };
 }
 
-const fetchFromJioSavan = async () => {
-
+const downloadFromJioSavan = async (songData) => {
+    return { filepath: songData.url, title: songData.title }
 }
 
-const fetchByUrlType = async (urlType) => {
-    switch (urlType) {
+const fetchByUrlType = async (songData) => {
+    switch (songData.urlType) {
         case 'youtube':
-            return await fetchFromYoutube();
+            return await downloadFromYoutube(songData);
         case 'jiosavan':
-            return await fetchFromJioSavan();
+            return await downloadFromJioSavan(songData);
     }
 }
 
@@ -58,12 +61,47 @@ export const fetchNextTrack = async () => {
     }
 
     // Fetch next track from given URL type.
-    songResult = await fetchByUrlType(getFirst.urlType);
+    songResult = await fetchByUrlType(getFirst);
 
     return songResult;
 }
 
+
+
 // generate metadata for song to add on the song queue.
-export const generateMetadata = async (songName) => {
-    
+export const generateSongMetadata = async (songName) => {
+    try {
+        const spotify = new SpotifyAPI();
+        const songDetail = await spotify.searchTrack(songName);
+        const { name, id } = songDetail;
+        if (!name) {
+            // TODO: return the user song name is incorrect.
+        }
+        const jio = new JioSavan();
+        const song = await jio.getSongBySongName(name);
+        const songMetadata = { title: '', url: '', urlType: '', originalName: songName, spotifyName: name };
+        if (song) {
+            songMetadata.title = song.title;
+            songMetadata.url = song.url;
+            songMetadata.urlType = "jiosavan";
+        } else {
+            const yt = new YouTubeDownloader();
+            const { url } = yt.getVideoDetail(name);
+            const { status, message, data } = await this.validateVideo(url);
+            if (status) {
+                songMetadata.title = data.name;
+                songMetadata.url = data.url;
+                songMetadata.urlType = "youtube";
+            }
+        }
+        return songMetadata;
+    } catch (error) {
+        console.error("Error generating metadata:", error.message);
+    }
 }
+
+
+// (async () => {
+//     const meta = await generateSongMetadata("aaj ki raat")
+//     console.log(meta);
+// })();
