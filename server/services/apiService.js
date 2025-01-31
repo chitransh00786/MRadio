@@ -38,10 +38,6 @@ class Service {
         songQueue.addToQueue(metadata);
         return { title: metadata.title, duration: metadata.duration, requestedBy };
     }
-
-    async addSongToTop() {
-        // TODO: Implement adding song to queue.
-    }
 }
 
 export default Service;

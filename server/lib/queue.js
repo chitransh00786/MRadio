@@ -223,7 +223,7 @@ class Queue {
 
             // Delete track file if it exists in tracks folder
             const currentTrack = this.tracks[0];
-            if (currentTrack && currentTrack.url.startsWith('tracks/')) {
+            if (currentTrack?.url.startsWith('tracks/')) {
                 if (fsHelper.exists(currentTrack.url)) {
                     fsHelper.delete(currentTrack.url);
                     console.log(`Deleted track file: ${currentTrack.url}`);
@@ -366,7 +366,7 @@ class Queue {
         try {
             // Delete track file if it exists in tracks folder
             const currentTrack = this.tracks[0];
-            if (currentTrack && currentTrack.url.startsWith('tracks/')) {
+            if (currentTrack?.url.startsWith('tracks/')) {
                 if (fsHelper.exists(currentTrack.url)) {
                     fsHelper.delete(currentTrack.url);
                     console.log(`Deleted track file: ${currentTrack.url}`);
