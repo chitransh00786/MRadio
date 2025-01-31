@@ -1,5 +1,5 @@
 import { errorRes, successRes } from "../utils/response.js";
-import Service from "./service.js"
+import Service from "../services/apiService.js"
 
 const service = new Service();
 export const skip = async (req, res) => {

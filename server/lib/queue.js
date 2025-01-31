@@ -4,8 +4,8 @@ import Throttle from "throttle";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
-import { fetchNextTrack } from "../utils/utils.js";
-import fsHelper from "../helper/fs-helper.js";
+import { fetchNextTrack } from "../services/nextTrackFetcherService.js";
+import fsHelper from "../utils/helper/fs-helper.js";
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 

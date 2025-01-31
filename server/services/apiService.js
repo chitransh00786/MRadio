@@ -1,6 +1,6 @@
 import queue from "../lib/queue.js";
 import SongQueueManager from "../utils/songQueueManager.js";
-import { generateSongMetadata } from "../utils/utils.js";
+import { generateSongMetadata } from "./metadataFetcherService.js";
 
 class Service {
 
