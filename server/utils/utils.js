@@ -2,7 +2,9 @@ import fsHelper from "./helper/fs-helper.js";
 import { token_set_ratio } from 'fuzzball';
 import { SONG_QUEUE_LOCATION, SPOTIFY_TOKEN } from "./constant.js";
 import logger from "./logger.js";
-
+import secret from "./secret.js";
+import ffmpegStatic from 'ffmpeg-static';
+import queue from "../lib/queue.js";
 /**
  * ====================
  * Common Utils
@@ -10,6 +12,17 @@ import logger from "./logger.js";
  */
 export const getQueueListJson = () => {
     return fsHelper.readFromJson(SONG_QUEUE_LOCATION, []);
+}
+
+export const getFfmpegPath = () => {
+    const env = secret.FFMPEG_ENV;
+    if(env === 'production') {
+        return '/usr/bin/ffmpeg';
+    } else if(env === 'development'){
+        return ffmpegStatic;
+    } else {
+        throw new Error("Unknown environment");
+    }
 }
 
 function calculateSimilarity(str1, str2) {
@@ -43,3 +56,45 @@ export const checkSimilarity = (original, found, source) => {
     }
     return similarity;
 };
+export const checkStreamMethod = (urlType) => {
+    const streamMethod = {
+        youtube: 'download',
+        jiosavan: 'online'
+    };
+    return streamMethod[urlType] || 'download';
+}
+
+export const shouldDeleteSong = (urlType) => {
+    return checkStreamMethod(urlType) === 'download';
+}
+export const handleDeleteSong = async (urlType, filePath) => {
+    try {
+        if (!shouldDeleteSong(urlType)) {
+            logger.debug(`Skipping deletion for online stream: ${filePath}`);
+            return;
+        }
+
+        if (fsHelper.exists(filePath)) {
+            fsHelper.delete(filePath);
+            logger.debug(`Deleted song file: ${filePath}`);
+        }
+
+        const files = fsHelper.listFiles('tracks');
+        const tracksInQueue = queue.tracks.map(track => track.url);
+
+        for (const file of files) {
+            const trackPath = `tracks/${file}`;
+            
+            if (!tracksInQueue.includes(trackPath)) {
+                try {
+                    fsHelper.delete(trackPath);
+                    logger.debug(`Deleted unexpected file: ${trackPath}`);
+                } catch (error) {
+                    logger.error(`Error deleting file ${trackPath}:`, { error });
+                }
+            }
+        }
+    } catch (error) {
+        logger.error('Error in handleDeleteSong:', { error });
+    }
+}

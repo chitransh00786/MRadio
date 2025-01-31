@@ -3,7 +3,6 @@ import http from "http";
 import { Server as IOServer } from "socket.io";
 import queue from "./lib/queue.js";
 import router from "./api/router.js";
-import logger from "./utils/logger.js";
 
 const PORT = 9126;
 const app = express();
@@ -55,7 +54,7 @@ app.get("/", function (req, res) {
     });
 
     server.listen(PORT, () => {
-        logger.info(`Listening on port ${PORT}`);
+        console.log(`Listening on port ${PORT}`);
     });
 })();
 

@@ -2,8 +2,8 @@ import ytdl from 'youtube-dl-exec';
 import yts from 'yt-search'
 import fs from 'fs';
 import path from 'path';
-import ffmpeg from 'ffmpeg-static';
 import logger from '../utils/logger.js';
+import { getFfmpegPath } from '../utils/utils.js';
 class YouTubeDownloader {
 
     async getVideoDetail(name, artistName) {
@@ -69,7 +69,7 @@ class YouTubeDownloader {
                 noCallHome: true,
                 noCheckCertificate: true,
                 preferFreeFormats: true,
-                ffmpegLocation: ffmpeg
+                ffmpegLocation: getFfmpegPath()
             };
 
             await ytdl(url, options);

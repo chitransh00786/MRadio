@@ -7,7 +7,15 @@ services:
       - "9126:9126"
     volumes:
       - .:/usr/src/app
+      - ./logs:/usr/src/app/logs
       - /usr/src/app/node_modules
     environment:
       NODE_ENV: development
+      FFMPEG_ENV: production
+      TZ: Asia/Kolkata
+      SPOTIFY_CLIEND_ID: ${SPOTIFY_CLIEND_ID}
+      SPOTIFY_CLIEND_SECRET_ID: ${SPOTIFY_CLIEND_SECRET_ID}
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     command: npm start

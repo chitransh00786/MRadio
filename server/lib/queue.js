@@ -7,8 +7,9 @@ import { spawn } from "child_process";
 import { fetchNextTrack } from "../services/nextTrackFetcherService.js";
 import fsHelper from "../utils/helper/fs-helper.js";
 import logger from "../utils/logger.js";
+import { getFfmpegPath } from "../utils/utils.js";
 
-ffmpeg.setFfmpegPath(ffmpegStatic);
+ffmpeg.setFfmpegPath(getFfmpegPath());
 
 
 class Queue {
@@ -327,7 +328,7 @@ class Queue {
             'pipe:1'
         ];
 
-        this.ffmpegProcess = spawn(ffmpegStatic, ffmpegArgs, {
+        this.ffmpegProcess = spawn(getFfmpegPath(), ffmpegArgs, {
             windowsHide: true
         });
 

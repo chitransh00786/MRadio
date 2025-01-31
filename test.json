@@ -5,5 +5,32 @@
         "urlType": "youtube",
         "originalName": "akhiyaan gulaab",
         "spotifyName": "Akhiyaan Gulaab (From \"Teri Baaton Mein Aisa Uljha Jiya\")"
+    },
+    {
+        "title": "Heropanti: Raat Bhar Full Audio Song | Tiger Shroff | Kriti Sanon",
+        "url": "https://youtube.com/watch?v=S8GKtyu27FY",
+        "urlType": "youtube",
+        "duration": "NaN:NaN",
+        "originalName": "aa raat bhar",
+        "spotifyName": "Raat Bhar",
+        "requestedBy": "mity__"
+    },
+    {
+        "title": "Dil Kehta Hai  | Akele Hum Akele Tum | Kumar Sanu & Alka Yagnik | Aamir Khan & Manisha Koirala",
+        "url": "https://youtube.com/watch?v=PqiddY3o3aY",
+        "urlType": "youtube",
+        "duration": "NaN:NaN",
+        "originalName": "dil kahta hai ",
+        "spotifyName": "Dil Kehta Hai",
+        "requestedBy": "mity__"
+    },
+    {
+        "title": "Falak Tak Song | Tashan | Akshay Kumar, Kareena Kapoor, Udit Narayan, Mahalaxmi Iyer, Vishal-Shekhar",
+        "url": "https://youtube.com/watch?v=vr8RaNuWjWc",
+        "urlType": "youtube",
+        "duration": "NaN:NaN",
+        "originalName": "falak tak chal sath chal",
+        "spotifyName": "Falak Tak",
+        "requestedBy": "mity__"
     }
 ]

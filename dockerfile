@@ -3,6 +3,14 @@ FROM node:18
 # Set the working directory
 WORKDIR /usr/src/app
 
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    dnsutils \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 

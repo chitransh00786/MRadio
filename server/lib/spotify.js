@@ -3,6 +3,7 @@ import qs from 'querystring';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import { checkSimilarity } from '../utils/utils.js';
+import logger from '../utils/logger.js';
 
 dotenv.config();
 
