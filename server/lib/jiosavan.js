@@ -2,6 +2,7 @@ import axios from "axios";
 import { JIO_SAVAN_SONG_SEARCH, JIO_SAVAN_TOP50 } from "../utils/constant.js";
 import { createDownloadLinks } from "../utils/crypto.js";
 import { durationFormatter, getRandomNumber } from "../utils/utils.js";
+import logger from "../utils/logger.js";
 
 class JioSavan {
     async getRandomFromTop50(retryCount = 1) {
@@ -23,12 +24,12 @@ class JioSavan {
                 requestedBy: "auto"
             }
         } catch (error) {
-            console.log(error);
-            console.log("Error fetching data, retries left:", retryCount);
+            logger.error(error);
+            logger.error("Error fetching data, retries left:", retryCount);
             if (retryCount > 0) {
                 return getRandomFromTop50(retryCount - 1);
             }
-            console.error("Failed after retrying:", error);
+            logger.error("Failed after retrying:", error);
             return null;
         }
     }
@@ -47,12 +48,12 @@ class JioSavan {
                 duration: duration
             }
         } catch (error) {
-            console.log(error);
-            console.log("Error fetching data, retries left:", retryCount);
+            logger.error(error);
+            logger.error("Error fetching data, retries left:", { retryCount });
             if (retryCount > 0) {
                 return getSongBySongName(songName, retryCount - 1);
             }
-            console.error("Failed after retrying:", error);
+            logger.error("Failed after retrying:", { error });
             return null;
         }
     }

@@ -112,7 +112,6 @@ export const generateSongMetadata = async (songName, requestedBy) => {
         if (!spotifyResult) {
             throw new Error("Could not find song on Spotify");
         }
-        console.log("spotify result: " + spotifyResult.name);
         const metadata = createMetadata(songName, spotifyResult.name, requestedBy);
 
         const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);

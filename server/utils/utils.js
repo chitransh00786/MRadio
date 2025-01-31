@@ -1,6 +1,7 @@
 import fsHelper from "./helper/fs-helper.js";
 import { token_set_ratio } from 'fuzzball';
 import { SONG_QUEUE_LOCATION, SPOTIFY_TOKEN } from "./constant.js";
+import logger from "./logger.js";
 
 /**
  * ====================
@@ -38,7 +39,7 @@ const SIMILARITY_THRESHOLD = 60;
 export const checkSimilarity = (original, found, source) => {
     const similarity = calculateSimilarity(original, found);
     if (similarity < SIMILARITY_THRESHOLD) {
-        console.log(`similarity less than ${SIMILARITY_THRESHOLD}: \n original: ${original} \n ${source}: found`);
+        logger.info(`similarity less than ${SIMILARITY_THRESHOLD}: \n original: ${original} \n ${source}: found`);
     }
     return similarity;
 };

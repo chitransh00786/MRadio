@@ -3,6 +3,7 @@ import yts from 'yt-search'
 import fs from 'fs';
 import path from 'path';
 import ffmpeg from 'ffmpeg-static';
+import logger from '../utils/logger.js';
 class YouTubeDownloader {
 
     async getVideoDetail(name, artistName) {
@@ -14,7 +15,7 @@ class YouTubeDownloader {
 
             return r.videos[0];
         } catch (error) {
-            console.log("Error getting details: " + error.message);
+            logger.error("Error getting details: " + error.message);
             throw error;
         }
     }

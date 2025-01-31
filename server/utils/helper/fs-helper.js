@@ -12,7 +12,6 @@ class FS {
 
     writeToJson(filePath, data) {
         const directoryPath = pathHelper.getDir(filePath);
-        console.log(directoryPath)
         if (!this.exists(directoryPath)) {
             this.createDirectory(directoryPath);
         }

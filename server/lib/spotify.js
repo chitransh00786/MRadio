@@ -61,12 +61,12 @@ class SpotifyAPI {
 
     async getValidAccessToken() {
         if (!this.isTokenValid()) {
-            console.log('Fetching new access token...');
+            logger.debug('Fetching new access token...');
             const accessToken = await this.getAccessToken();
             const expiration = Date.now() + 3600 * 1000 - 5000; // Token expires in 1 hour minus 5 seconds
             this.writeTokenToFile(accessToken, expiration);
         } else {
-            console.log('Using cached access token...');
+            logger.debug('Using cached access token...');
         }
 
         const tokenData = this.readTokenFromFile();
@@ -77,7 +77,6 @@ class SpotifyAPI {
         try {
             const accessToken = await this.getValidAccessToken();
             const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10&include_external=audio`;
-            console.log("url ", url);
             const response = await axios.get(url, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,

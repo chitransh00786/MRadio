@@ -6,6 +6,7 @@ import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
 import { fetchNextTrack } from "../services/nextTrackFetcherService.js";
 import fsHelper from "../utils/helper/fs-helper.js";
+import logger from "../utils/logger.js";
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
@@ -43,11 +44,11 @@ class Queue {
                             duration: song?.duration ?? "00:00",
                             requestedBy: song?.requestedBy ?? "anonymous"
                         });
-                        console.log(`Downloaded and added new track: ${song.title}`);
+                        logger.debug(`Downloaded and added new track: ${song.title}`);
                     }
                 }
             } catch (error) {
-                console.error("Error ensuring queue size:", error);
+                logger.error("Error ensuring queue size:", { error });
             } finally {
                 this.isDownloading = false;
             }
@@ -72,7 +73,7 @@ class Queue {
         const client = new PassThrough();
 
         client.on('error', (err) => {
-            console.log(`Client ${id} disconnected: ${err.message}`);
+            logger.error(`Client ${id} disconnected: ${err.message}`);
             this.removeClient(id);
         });
 
@@ -112,19 +113,19 @@ class Queue {
             this.isDownloading = false;
 
             // Load initial tracks up to minQueueSize
-            console.log("Loading initial tracks...");
+            logger.debug("Loading initial tracks...");
 
             // Load first track
             const song = await fetchNextTrack()
             const songBitrate = await this.getTrackBitrate(song.url)
             this.tracks.push({ url: song.url, bitrate: songBitrate, title: song.title, duration: song?.duration, requestedBy: song?.requestedBy ?? "anonymous" });
-            console.log(`Added initial track: ${song.title}`);
+            logger.debug(`Added initial track: ${song.title}`);
 
             this.ensureQueueSize();
 
-            console.log(`Loaded initial track and queued downloads. Current queue size: ${this.tracks.length}`);
+            logger.debug(`Loaded initial track and queued downloads. Current queue size: ${this.tracks.length}`);
         } catch (error) {
-            console.error(`Error loading tracks: ${error.message}`);
+            logger.error(`Error loading tracks: ${error.message}`);
             this.tracks = [];
             throw error;
         }
@@ -155,7 +156,7 @@ class Queue {
                     } catch (error) {
                         // Ignore ESRCH errors (process already gone)
                         if (error.code !== 'ESRCH') {
-                            console.error('Error during FFmpeg cleanup:', error);
+                            logger.error('Error during FFmpeg cleanup:', { error });
                         }
                     }
                     this.ffmpegProcess = null;
@@ -201,13 +202,13 @@ class Queue {
         };
         this.broadcast(Buffer.from(JSON.stringify(metadata)));
 
-        console.log(`Now playing: ${this.currentTrack.title || 'Unknown'}`);
+        logger.info(`Now playing: ${this.currentTrack.title || 'Unknown'}`);
         return this.currentTrack;
     }
 
     async skip() {
         if (this.tracks.length === 0 || this.isTransitioning) {
-            console.log("Skip not possible at this time");
+            logger.info("Skip not possible at this time");
             return;
         }
 
@@ -215,7 +216,7 @@ class Queue {
 
         try {
             this.playing = false;
-            console.log("Skipping song:", this.currentTrack?.title || 'Unknown');
+            logger.debug("Skipping song:", this.currentTrack?.title || 'Unknown');
 
             const hasNextTrack = this.tracks.length > 1;
 
@@ -226,7 +227,7 @@ class Queue {
             if (currentTrack?.url.startsWith('tracks/')) {
                 if (fsHelper.exists(currentTrack.url)) {
                     fsHelper.delete(currentTrack.url);
-                    console.log(`Deleted track file: ${currentTrack.url}`);
+                    logger.debug(`Deleted track file: ${currentTrack.url}`);
                 }
             }
 
@@ -242,7 +243,7 @@ class Queue {
 
                 while (this.tracks.length === 0) {
                     if (Date.now() - startTime > maxWaitTime) {
-                        console.log("No tracks available after waiting");
+                        logger.debug("No tracks available after waiting");
                         break;
                     }
                     await new Promise(resolve => setTimeout(resolve, 100));
@@ -252,12 +253,12 @@ class Queue {
                     this.playing = true;
                     await this.play(true);
                 } else {
-                    console.log("No tracks available after skip");
+                    logger.warn("No tracks available after skip");
                 }
             }
             this.ensureQueueSize();
         } catch (error) {
-            console.error('Error during skip:', error);
+            logger.error('Error during skip:', { error });
             this.playing = false;
         } finally {
             this.isTransitioning = false;
@@ -268,12 +269,12 @@ class Queue {
         if (!this.started() || !this.playing) return;
         this.playing = false;
         this.cleanupCurrentStream();
-        console.log("Paused");
+        logger.debug("Paused");
     }
 
     resume() {
         if (!this.started() || this.playing) return;
-        console.log("Resumed");
+        logger.debug("Resumed");
         this.play(false);
     }
 
@@ -283,7 +284,7 @@ class Queue {
 
     async play(useNewTrack = false) {
         if (this.tracks.length === 0) {
-            console.log("No tracks in queue");
+            logger.error("No tracks in queue");
             this.playing = false;
             return;
         }
@@ -297,7 +298,7 @@ class Queue {
             this.loadTrackStream();
             this.start();
         } catch (error) {
-            console.error('Error during play:', error);
+            logger.error('Error during play:', { error });
             this.playing = false;
         }
     }
@@ -335,20 +336,20 @@ class Queue {
         this.ffmpegProcess.stderr.on('data', (data) => {
             const errorMsg = data.toString().toLowerCase();
             if (!errorMsg.includes('config') && !errorMsg.includes('version')) {
-                console.error(`FFmpeg error: ${data.toString()}`);
+                logger.error(`FFmpeg error: ${data.toString()}`);
             }
         });
 
         this.ffmpegProcess.once('close', (code) => {
             if (code !== 0 && this.playing && !this.isTransitioning) {
-                console.log(`FFmpeg process exited with code ${code}`);
+                logger.error(`FFmpeg process exited with code ${code}`);
                 this.play(true);
             }
         });
 
         // Handle stream errors
         this.stream.on('error', (error) => {
-            console.error('Stream error:', error);
+            logger.error('Stream error:', { error });
             if (this.playing && !this.isTransitioning) {
                 this.play(true);
             }
@@ -360,7 +361,7 @@ class Queue {
     async handleTrackEnd() {
         if (!this.playing || this.isTransitioning) return;
 
-        console.log("Track ended, managing queue...");
+        logger.debug("Track ended, managing queue...");
         this.isTransitioning = true;
 
         try {
@@ -369,7 +370,7 @@ class Queue {
             if (currentTrack?.url.startsWith('tracks/')) {
                 if (fsHelper.exists(currentTrack.url)) {
                     fsHelper.delete(currentTrack.url);
-                    console.log(`Deleted track file: ${currentTrack.url}`);
+                    logger.debug(`Deleted track file: ${currentTrack.url}`);
                 }
             }
 
@@ -382,7 +383,7 @@ class Queue {
 
             while (this.tracks.length === 0) {
                 if (Date.now() - startTime > maxWaitTime) {
-                    console.log("Timeout waiting for next track");
+                    logger.warn("Timeout waiting for next track");
                     break;
                 }
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -391,11 +392,11 @@ class Queue {
             if (this.tracks.length > 0) {
                 this.play(true);
             } else {
-                console.log("No tracks available after current track ended");
+                logger.warn("No tracks available after current track ended");
                 this.playing = false;
             }
         } catch (error) {
-            console.error('Error handling track end:', error);
+            logger.error('Error handling track end:', { error });
             this.playing = false;
         } finally {
             this.isTransitioning = false;
@@ -417,7 +418,7 @@ class Queue {
                 try {
                     this.broadcast(chunk);
                 } catch (error) {
-                    console.error('Broadcast error:', error);
+                    logger.error('Broadcast error:', { error });
                 }
             }
         });
@@ -425,7 +426,7 @@ class Queue {
         pipeline.on("end", () => this.handleTrackEnd());
 
         pipeline.on("error", (err) => {
-            console.error("Stream error:", err);
+            logger.error("Stream error:", { err });
             if (this.playing && !this.isTransitioning) {
                 this.play(true);
             }

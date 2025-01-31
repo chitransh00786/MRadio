@@ -1,3 +1,4 @@
+import logger from "./logger.js";
 import { getQueueListJson, saveQueueListJson } from "./utils.js";
 
 /**
@@ -43,7 +44,7 @@ class SongQueueManager {
         if (this.queue.length > 0) {
             return this.queue[0];
         } else {
-            console.log("Queue is empty!")
+            logger.debug("Queue is empty!")
         }
 
     }
@@ -52,7 +53,7 @@ class SongQueueManager {
         if (this.queue.length > 0) {
             return this.queue[this.queue.length - 1];
         } else {
-            console.log("Queue is empty!")
+            logger.debug("Queue is empty!")
         }
     }
 
