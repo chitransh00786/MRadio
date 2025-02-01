@@ -30,7 +30,9 @@ const downloadFromYoutube = async (songData) => {
  * @returns 
  */
 const downloadFromJioSavan = async (songData) => {
-    return { url: songData.url, title: songData.title }
+    const yt = new YouTubeDownloader();
+    const { url } = await yt.downloadFromUrl(songData.url, songData.title);
+    return { url: url, title: songData.title };
 }
 
 /**
@@ -67,7 +69,7 @@ export const fetchNextTrack = async () => {
         // Fetch next track from given URL type.
         songResult = await fetchByUrlType(getFirst);
         songQueue.removeFromFront();
-        return {...songResult, requestedBy: getFirst.requestedBy};
+        return { ...songResult, requestedBy: getFirst.requestedBy };
     } catch (error) {
         songQueue.removeFromFront();
     }

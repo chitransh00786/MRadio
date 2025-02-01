@@ -3,7 +3,11 @@ import yts from 'yt-search'
 import fs from 'fs';
 import path from 'path';
 import logger from '../utils/logger.js';
+import ffmpeg from 'fluent-ffmpeg';
 import { getFfmpegPath } from '../utils/utils.js';
+import axios from 'axios';
+
+ffmpeg.setFfmpegPath(getFfmpegPath());
 class YouTubeDownloader {
 
     async getVideoDetail(name, artistName) {
@@ -53,7 +57,6 @@ class YouTubeDownloader {
     }
 
     async downloadVideo(url, title, outputPath = 'tracks') {
-        // Ensure output directory exists
         if (!fs.existsSync(outputPath)) {
             fs.mkdirSync(outputPath, { recursive: true });
         }
@@ -64,7 +67,7 @@ class YouTubeDownloader {
                 output: outputFilePath,
                 extractAudio: true,
                 audioFormat: 'mp3',
-                audioQuality: 5,
+                audioQuality: 6,
                 noWarnings: true,
                 noCallHome: true,
                 noCheckCertificate: true,
@@ -77,6 +80,58 @@ class YouTubeDownloader {
 
         } catch (error) {
             console.error('Download error:', error);
+            throw error;
+        }
+    }
+
+
+    async downloadFromUrl(url, title, outputPath = 'tracks') {
+        if (!fs.existsSync(outputPath)) {
+            fs.mkdirSync(outputPath, { recursive: true });
+        }
+
+        const outputFilePath = path.join(outputPath, `${title}.mp3`);
+        const tempFile = path.join(outputPath, `temp_${title}.mp3`);
+
+        try {
+            const response = await axios({
+                method: 'get',
+                url: url,
+                responseType: 'stream'
+            });
+
+            const writer = fs.createWriteStream(tempFile);
+            response.data.pipe(writer);
+
+            await new Promise((resolve, reject) => {
+                writer.on('finish', resolve);
+                writer.on('error', reject);
+            });
+
+            await new Promise((resolve, reject) => {
+                ffmpeg(tempFile)
+                    .toFormat('mp3')
+                    .audioQuality(6)
+                    .on('end', () => {
+                        fs.unlink(tempFile, (err) => {
+                            if (err) logger.error('Error deleting temp file:', err);
+                        });
+                        resolve();
+                    })
+                    .on('error', (err) => {
+                        fs.unlink(tempFile, () => {
+                            reject(err);
+                        });
+                    })
+                    .save(outputFilePath);
+            });
+
+            return { url: outputFilePath };
+        } catch (error) {
+            logger.error('Download error:', error);
+            if (fs.existsSync(tempFile)) {
+                fs.unlinkSync(tempFile);
+            }
             throw error;
         }
     }
