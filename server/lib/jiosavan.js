@@ -43,6 +43,9 @@ class JioSavan {
 
             if (!title) throw new Error("No Song Data Found");
             const { encrypted_media_url, duration } = more_info;
+            if(duration > 600){
+                throw new Error("Song Duration is more than 10 minutes.")
+            }
             const songLink = createDownloadLinks(encrypted_media_url);
             return {
                 title,
@@ -52,12 +55,8 @@ class JioSavan {
             }
         } catch (error) {
             logger.error(error);
-            logger.error("Error fetching data, retries left:", { retryCount });
-            if (retryCount > 0) {
-                return getSongBySongName(songName, retryCount - 1);
-            }
             logger.error("Failed after retrying:", { error });
-            return null;
+            throw error;
         }
     }
 }
