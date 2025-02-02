@@ -1,4 +1,14 @@
-import crypto from 'node-forge'
+import cryptoForge from 'node-forge'
+import crypto from 'crypto';
+
+/**
+ * Generates a cryptographically secure random 256-bit token
+ * @returns {string} A 64-character hexadecimal string representing the 256-bit token
+ */
+export function generate256BitToken() {
+    const randomBytes = crypto.randomBytes(32);
+    return randomBytes.toString('hex');
+}
 
 export function createDownloadLinks(encryptedMediaUrl) {
     if (!encryptedMediaUrl) return [];
@@ -14,10 +24,10 @@ export function createDownloadLinks(encryptedMediaUrl) {
     const key = '38346591';
     const iv = '00000000';
 
-    const encrypted = crypto.util.decode64(encryptedMediaUrl);
-    const decipher = crypto.cipher.createDecipher('DES-ECB', crypto.util.createBuffer(key));
-    decipher.start({ iv: crypto.util.createBuffer(iv) });
-    decipher.update(crypto.util.createBuffer(encrypted));
+    const encrypted = cryptoForge.util.decode64(encryptedMediaUrl);
+    const decipher = cryptoForge.cipher.createDecipher('DES-ECB', cryptoForge.util.createBuffer(key));
+    decipher.start({ iv: cryptoForge.util.createBuffer(iv) });
+    decipher.update(cryptoForge.util.createBuffer(encrypted));
     decipher.finish();
 
     const decryptedLink = decipher.output.getBytes();

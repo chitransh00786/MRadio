@@ -1,6 +1,6 @@
 import fsHelper from "./helper/fs-helper.js";
 import { token_set_ratio } from 'fuzzball';
-import { SONG_QUEUE_LOCATION, SPOTIFY_TOKEN } from "./constant.js";
+import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION } from "./constant.js";
 import logger from "./logger.js";
 import secret from "./secret.js";
 import ffmpegStatic from 'ffmpeg-static';
@@ -10,9 +10,6 @@ import queue from "../lib/queue.js";
  * Common Utils
  * ====================
  */
-export const getQueueListJson = () => {
-    return fsHelper.readFromJson(SONG_QUEUE_LOCATION, []);
-}
 
 export const getFfmpegPath = () => {
     const env = secret.FFMPEG_ENV;
@@ -30,12 +27,24 @@ function calculateSimilarity(str1, str2) {
     return similarity;
 }
 
+
+export const getQueueListJson = () => {
+    return fsHelper.readFromJson(SONG_QUEUE_LOCATION, []);
+}
 export const saveQueueListJson = (data) => {
     return fsHelper.writeToJson(SONG_QUEUE_LOCATION, data);
 }
 
+export const getTokenListJson = () => {
+    return fsHelper.readFromJson(AUTH_TOKEN_LOCATION, []);
+}
+
+export const saveTokenListJson = (data) => {
+    return fsHelper.writeToJson(AUTH_TOKEN_LOCATION, data);
+}
+
 export const getSpotifyConfigJson = () => {
-    return fsHelper.readFromJson(SPOTIFY_TOKEN, {});
+    return fsHelper.readFromJson(SPOTIFY_TOKEN_LOCATION, {});
 }
 
 export const getRandomNumber = (min, max) => {
@@ -56,6 +65,7 @@ export const checkSimilarity = (original, found, source) => {
     }
     return similarity;
 };
+
 export const checkStreamMethod = (urlType) => {
     const streamMethod = {
         youtube: 'download',

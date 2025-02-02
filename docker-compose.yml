@@ -15,6 +15,8 @@ services:
       TZ: Asia/Kolkata
       SPOTIFY_CLIEND_ID: ${SPOTIFY_CLIEND_ID}
       SPOTIFY_CLIEND_SECRET_ID: ${SPOTIFY_CLIEND_SECRET_ID}
+      X_ADMIN_API_KEY: ${X_ADMIN_API_KEY}
+      X_ADMIN_TOKEN_KEY: ${X_ADMIN_TOKEN_KEY}
     dns:
       - 8.8.8.8
       - 8.8.4.4

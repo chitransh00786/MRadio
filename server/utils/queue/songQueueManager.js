@@ -1,12 +1,6 @@
-import logger from "./logger.js";
-import { getQueueListJson, saveQueueListJson } from "./utils.js";
+import logger from "../logger.js";
+import { getQueueListJson, saveQueueListJson } from "../utils.js";
 
-/**
- * song queue json format 
- * title => Song Name
- * url => url
- * urlType => url type either it's youtube url or other. ["youtube", "jiosavan"]
- */
 class SongQueueManager {
     constructor() {
         this.queue = this.readSongQueue() || [];
@@ -37,9 +31,7 @@ class SongQueueManager {
         }
     }
 
-    /**
-     * @returns {{title: string, url: string, urlType: 'youtube' | 'jiosavan'}}
-     */
+
     getFirstFromQueue() {
         if (this.queue.length > 0) {
             return this.queue[0];

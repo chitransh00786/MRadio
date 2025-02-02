@@ -51,5 +51,25 @@ export const addSongToQueue = async (req, res) => {
 }
 
 export const addSongToTop = async (req, res) => {
+    try {
+        if (!req.body.songName) {
+            throw new Error("Invalid song name")
+        }
+        const response = await service.addSongToTop(req.body);
+        res.status(200).json(successRes(response, "Successfully Added song to the queue"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Song Not Found!"))
+    }
+}
 
+export const generateToken = async (req, res) => {
+    try {
+        if(!req.body.username){
+            throw new Error("username is required!");
+        }
+        const response = await service.generateToken(req.body.username);
+        res.status(200).json(successRes(response, "Successfully Generated token!"));
+    } catch (error) {
+        res.status(400).json(errorRes({error: error.message}, "Error generating token!"))
+    }
 }

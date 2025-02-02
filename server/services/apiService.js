@@ -1,5 +1,7 @@
 import queue from "../lib/queue.js";
-import SongQueueManager from "../utils/songQueueManager.js";
+import { generate256BitToken } from "../utils/crypto.js";
+import SongQueueManager from "../utils/queue/songQueueManager.js";
+import TokenManager from "../utils/queue/tokenManager.js";
 import { generateSongMetadata } from "./metadataFetcherService.js";
 
 class Service {
@@ -37,6 +39,20 @@ class Service {
         const songQueue = new SongQueueManager();
         songQueue.addToQueue(metadata);
         return { title: metadata.title, duration: metadata.duration, requestedBy };
+    }
+
+    async addSongToTop({ songName, requestedBy = "anonymous" }) {
+        const metadata = await generateSongMetadata(songName, requestedBy);
+        const songQueue = new SongQueueManager();
+        songQueue.addToFront(metadata);
+        return { title: metadata.title, duration: metadata.duration, requestedBy };
+    }
+
+    async generateToken(username) {
+        const token = generate256BitToken();
+        const tokenManager = new TokenManager();
+        tokenManager.addToken({token, username});
+        return {token, username};
     }
 }
 

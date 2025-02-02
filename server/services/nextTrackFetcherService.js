@@ -1,6 +1,6 @@
 import YouTubeDownloader from "../lib/download.js";
 import JioSavan from "../lib/jiosavan.js";
-import SongQueueManager from "../utils/songQueueManager.js";
+import SongQueueManager from "../utils/queue/songQueueManager.js";
 
 
 /**

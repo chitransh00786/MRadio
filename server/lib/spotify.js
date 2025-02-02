@@ -1,16 +1,15 @@
 import axios from 'axios';
 import qs from 'querystring';
 import fs from 'fs';
-import dotenv from 'dotenv';
 import { checkSimilarity } from '../utils/utils.js';
 import logger from '../utils/logger.js';
+import secret from '../utils/secret.js';
 
-dotenv.config();
 
 class SpotifyAPI {
     constructor() {
-        this.clientId = process.env.SPOTIFY_CLIEND_ID;
-        this.clientSecret = process.env.SPOTIFY_CLIEND_SECRET_ID;
+        this.clientId = secret.SPOTIFY_CLIEND_ID;
+        this.clientSecret = secret.SPOTIFY_CLIEND_SECRET_ID;
         this.authHeader = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
         this.tokenUrl = 'https://accounts.spotify.com/api/token';
         this.tokenFilePath = './config/token.json';
