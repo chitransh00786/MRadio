@@ -6,6 +6,8 @@ import logger from '../utils/logger.js';
 import ffmpeg from 'fluent-ffmpeg';
 import { getFfmpegPath } from '../utils/utils.js';
 import axios from 'axios';
+import cacheManager from './cacheManager.js';
+import fsHelper from '../utils/helper/fs-helper.js';
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 class YouTubeDownloader {
@@ -51,17 +53,28 @@ class YouTubeDownloader {
 
             return { status: true, message: "Successfull" };
         } catch (error) {
-            console.error('Video validation error:', error);
+            logger.error('Video validation error:', error);
             return { status: false, message: "Video validation error: " }
         }
     }
 
     async downloadVideo(url, title, outputPath = 'tracks') {
-        if (!fs.existsSync(outputPath)) {
-            fs.mkdirSync(outputPath, { recursive: true });
+        // Check if song exists in cache first
+        const cachedPath = cacheManager.getFromCache(title);
+        if (cachedPath) {
+            logger.info(`Using cached version of: ${title}`);
+            return { url: cachedPath };
         }
 
-        const outputFilePath = path.join(outputPath, `${title}.mp3`);
+        // Ensure tracks directory exists
+        if (!fsHelper.exists(outputPath)) {
+            fsHelper.createDirectory(outputPath);
+            logger.info(`Created directory: ${outputPath}`);
+        }
+
+        // Get consistent file path
+        const outputFilePath = cacheManager.getOriginalPath(title);
+        logger.info(`Downloading ${title} to ${outputFilePath}`);
         try {
             const options = {
                 output: outputFilePath,
@@ -75,25 +88,39 @@ class YouTubeDownloader {
                 ffmpegLocation: getFfmpegPath()
             };
 
+            logger.info(`Downloading ${title} to ${outputFilePath}`);
             await ytdl(url, options);
+            logger.info(`Successfully downloaded ${title} to ${outputFilePath}`);
             return { url: outputFilePath }
 
         } catch (error) {
-            console.error('Download error:', error);
+            logger.error(`Error downloading ${title}:`, error);
             throw error;
         }
     }
 
-
     async downloadFromUrl(url, title, outputPath = 'tracks') {
-        if (!fs.existsSync(outputPath)) {
-            fs.mkdirSync(outputPath, { recursive: true });
+        // Check if song exists in cache first
+        const cachedPath = cacheManager.getFromCache(title);
+        if (cachedPath) {
+            logger.info(`Using cached version of: ${title}`);
+            return { url: cachedPath };
         }
 
-        const outputFilePath = path.join(outputPath, `${title}.mp3`);
-        const tempFile = path.join(outputPath, `temp_${title}.mp3`);
+        // Ensure tracks directory exists
+        if (!fsHelper.exists(outputPath)) {
+            fsHelper.createDirectory(outputPath);
+            logger.info(`Created directory: ${outputPath}`);
+        }
+
+        // Get consistent file paths
+        const outputFilePath = cacheManager.getOriginalPath(title);
+        const safeTitle = title.replace(/[<>:"/\\|?*]/g, '');
+        const tempFile = path.join(outputPath, `temp_${safeTitle}.mp3`);
+        logger.info(`Downloading ${title} to ${outputFilePath}`);
 
         try {
+            logger.info(`Downloading ${title} from URL to ${outputFilePath}`);
             const response = await axios({
                 method: 'get',
                 url: url,
@@ -116,6 +143,7 @@ class YouTubeDownloader {
                         fs.unlink(tempFile, (err) => {
                             if (err) logger.error('Error deleting temp file:', err);
                         });
+                        logger.info(`Successfully downloaded ${title} to ${outputFilePath}`);
                         resolve();
                     })
                     .on('error', (err) => {
@@ -128,9 +156,10 @@ class YouTubeDownloader {
 
             return { url: outputFilePath };
         } catch (error) {
-            logger.error('Download error:', error);
-            if (fs.existsSync(tempFile)) {
-                fs.unlinkSync(tempFile);
+            logger.error(`Error downloading ${title}:`, error);
+            if (fsHelper.exists(tempFile)) {
+                fsHelper.delete(tempFile);
+                logger.info(`Cleaned up temp file: ${tempFile}`);
             }
             throw error;
         }

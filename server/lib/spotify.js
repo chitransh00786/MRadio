@@ -61,12 +61,12 @@ class SpotifyAPI {
 
     async getValidAccessToken() {
         if (!this.isTokenValid()) {
-            logger.debug('Fetching new access token...');
+            logger.info('Fetching new access token...');
             const accessToken = await this.getAccessToken();
             const expiration = Date.now() + 3600 * 1000 - 5000; // Token expires in 1 hour minus 5 seconds
             this.writeTokenToFile(accessToken, expiration);
         } else {
-            logger.debug('Using cached access token...');
+            logger.info('Using cached access token...');
         }
 
         const tokenData = this.readTokenFromFile();

@@ -36,7 +36,7 @@ class SongQueueManager {
         if (this.queue.length > 0) {
             return this.queue[0];
         } else {
-            logger.debug("Queue is empty!")
+            logger.info("Queue is empty!")
         }
 
     }
@@ -45,7 +45,7 @@ class SongQueueManager {
         if (this.queue.length > 0) {
             return this.queue[this.queue.length - 1];
         } else {
-            logger.debug("Queue is empty!")
+            logger.info("Queue is empty!")
         }
     }
 

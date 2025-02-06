@@ -5,7 +5,7 @@ const service = new Service();
 export const skip = async (req, res) => {
     try {
         await service.skip();
-        res.status(200).json(successRes({ skip: true }, "skip Successful"));
+        res.status(200).json(successRes({ skip: true }, "Skip Successful \n Playing next song..."));
     } catch (error) {
         res.status(400).json(errorRes({ error: error.message }, "Skip Error"))
     }
@@ -17,6 +17,16 @@ export const getCurrentSong = async (req, res) => {
         res.status(200).json(successRes(response, "Current Song"));
     } catch (error) {
         res.status(400).json(errorRes({ error: error.message }, "Current Song Error"));
+    }
+}
+
+export const previousSong = async (req, res) => {
+    try {
+        const response = await service.previous();
+        res.status(200).json(successRes(response, "Previous Song"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Previous song error"))
+
     }
 }
 
@@ -64,12 +74,12 @@ export const addSongToTop = async (req, res) => {
 
 export const generateToken = async (req, res) => {
     try {
-        if(!req.body.username){
+        if (!req.body.username) {
             throw new Error("username is required!");
         }
         const response = await service.generateToken(req.body.username);
         res.status(200).json(successRes(response, "Successfully Generated token!"));
     } catch (error) {
-        res.status(400).json(errorRes({error: error.message}, "Error generating token!"))
+        res.status(400).json(errorRes({ error: error.message }, "Error generating token!"))
     }
 }

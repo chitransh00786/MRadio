@@ -34,6 +34,11 @@ class Service {
         return true;
     }
 
+    async previous() {
+        await queue.previous();
+        return true;
+    }
+
     async addSongToQueue({ songName, requestedBy = "anonymous" }) {
         const metadata = await generateSongMetadata(songName, requestedBy);
         const songQueue = new SongQueueManager();
@@ -51,8 +56,8 @@ class Service {
     async generateToken(username) {
         const token = generate256BitToken();
         const tokenManager = new TokenManager();
-        tokenManager.addToken({token, username});
-        return {token, username};
+        tokenManager.addToken({ token, username });
+        return { token, username };
     }
 }
 

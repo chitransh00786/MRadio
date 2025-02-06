@@ -1,6 +1,8 @@
 import YouTubeDownloader from "../lib/download.js";
 import JioSavan from "../lib/jiosavan.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
+import cacheManager from "../lib/cacheManager.js";
+import logger from "../utils/logger.js";
 
 
 /**
@@ -66,11 +68,25 @@ export const fetchNextTrack = async () => {
             return songResult;
         }
 
-        // Fetch next track from given URL type.
+        // Check if song exists in cache first
+        const cachedPath = cacheManager.getFromCache(getFirst.title);
+        if (cachedPath) {
+            logger.info(`Using cached version of: ${getFirst.title}`);
+            songQueue.removeFromFront();
+            return {
+                url: cachedPath, 
+                title: getFirst.title,
+                requestedBy: getFirst.requestedBy 
+            };
+        }
+
+        // If not in cache, fetch next track from given URL type
         songResult = await fetchByUrlType(getFirst);
         songQueue.removeFromFront();
         return { ...songResult, requestedBy: getFirst.requestedBy };
     } catch (error) {
+        logger.error('Error fetching next track:', error);
         songQueue.removeFromFront();
+        throw error;
     }
 }

@@ -13,9 +13,9 @@ import queue from "../lib/queue.js";
 
 export const getFfmpegPath = () => {
     const env = secret.FFMPEG_ENV;
-    if(env === 'production') {
+    if (env === 'production') {
         return '/usr/bin/ffmpeg';
-    } else if(env === 'development'){
+    } else if (env === 'development') {
         return ffmpegStatic;
     } else {
         throw new Error("Unknown environment");
@@ -51,10 +51,21 @@ export const getRandomNumber = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 export const durationFormatter = (duration) => {
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
+    if (typeof duration === "string" && duration.includes(":")) {
+        return duration;
+    }
+
+    const numDuration = Number(duration);
+
+    if (isNaN(numDuration)) {
+        return duration;
+    }
+
+    const minutes = Math.floor(numDuration / 60);
+    const seconds = numDuration % 60;
+
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
+};
 
 const SIMILARITY_THRESHOLD = 60;
 
@@ -80,13 +91,13 @@ export const shouldDeleteSong = (urlType) => {
 export const handleDeleteSong = async (urlType, filePath) => {
     try {
         if (!shouldDeleteSong(urlType)) {
-            logger.debug(`Skipping deletion for online stream: ${filePath}`);
+            logger.info(`Skipping deletion for online stream: ${filePath}`);
             return;
         }
 
         if (fsHelper.exists(filePath)) {
             fsHelper.delete(filePath);
-            logger.debug(`Deleted song file: ${filePath}`);
+            logger.info(`Deleted song file: ${filePath}`);
         }
 
         const files = fsHelper.listFiles('tracks');
@@ -94,11 +105,11 @@ export const handleDeleteSong = async (urlType, filePath) => {
 
         for (const file of files) {
             const trackPath = `tracks/${file}`;
-            
+
             if (!tracksInQueue.includes(trackPath)) {
                 try {
                     fsHelper.delete(trackPath);
-                    logger.debug(`Deleted unexpected file: ${trackPath}`);
+                    logger.info(`Deleted unexpected file: ${trackPath}`);
                 } catch (error) {
                     logger.error(`Error deleting file ${trackPath}:`, { error });
                 }

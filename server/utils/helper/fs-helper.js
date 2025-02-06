@@ -34,8 +34,24 @@ class FS {
     }
 
     rename(oldPath, newPath) {
-        fs.renameSync(oldPath, newPath);
-        return true;
+        try {
+            fs.renameSync(oldPath, newPath);
+            return true;
+        } catch (error) {
+            // If rename fails (e.g., across devices), try copy+delete
+            this.copy(oldPath, newPath);
+            this.delete(oldPath);
+            return true;
+        }
+    }
+
+    copy(sourcePath, destinationPath) {
+        try {
+            fs.copyFileSync(sourcePath, destinationPath);
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to copy file from ${sourcePath} to ${destinationPath}: ${error.message}`);
+        }
     }
 
     listFiles(directoryPath) {

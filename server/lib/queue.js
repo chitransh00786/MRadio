@@ -2,15 +2,15 @@ import { v4 as uuid } from "uuid";
 import { PassThrough } from "stream";
 import Throttle from "throttle";
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
+import path from 'path';
 import { fetchNextTrack } from "../services/nextTrackFetcherService.js";
 import fsHelper from "../utils/helper/fs-helper.js";
 import logger from "../utils/logger.js";
 import { getFfmpegPath } from "../utils/utils.js";
+import cacheManager from "./cacheManager.js";
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
-
 
 class Queue {
     constructor() {
@@ -24,6 +24,52 @@ class Queue {
         this.ffmpegProcess = null;
         this.isDownloading = false;
         this.minQueueSize = 2;
+        this.previousTrack = null;  // Store just the last played song
+    }
+
+    async previous() {
+        if (!this.previousTrack || this.isTransitioning) {
+            logger.info("No previous track available");
+            return;
+        }
+
+        this.isTransitioning = true;
+
+        try {
+            this.playing = false;
+            logger.info("Going to previous track:", this.previousTrack.title);
+
+            await this.cleanupCurrentStream();
+
+            // Check if the previous track is in cache
+            if (this.previousTrack.url.startsWith('tracks/')) {
+                const cachedPath = cacheManager.getFromCache(this.previousTrack.title);
+                if (cachedPath) {
+                    this.previousTrack.url = cachedPath;
+                } else {
+                    logger.info(`Previous track ${this.previousTrack.title} not found in cache`);
+                    return;
+                }
+            }
+
+            // Store current track as previous
+            const temp = this.currentTrack;
+            
+            // Set previous track as current
+            this.currentTrack = this.previousTrack;
+            
+            // Update previous track
+            this.previousTrack = temp;
+
+            this.playing = true;
+            await this.play(false);
+
+        } catch (error) {
+            logger.error('Error during previous:', { error });
+            this.playing = false;
+        } finally {
+            this.isTransitioning = false;
+        }
     }
 
     async ensureQueueSize() {
@@ -45,7 +91,7 @@ class Queue {
                             duration: song?.duration ?? "00:00",
                             requestedBy: song?.requestedBy ?? "anonymous"
                         });
-                        logger.debug(`Downloaded and added new track: ${song.title}`);
+                        logger.info(`Added track: ${song.title}`);
                     }
                 }
             } catch (error) {
@@ -113,18 +159,47 @@ class Queue {
             this.currentTrack = null;
             this.isDownloading = false;
 
+            // Clean up tracks directory before loading new tracks
+            logger.info("Cleaning up tracks directory...");
+            const tracksDir = path.join(process.cwd(), dir);
+            if (fsHelper.exists(tracksDir)) {
+                const files = fsHelper.listFiles(tracksDir);
+                for (const file of files) {
+                    const filePath = path.join(tracksDir, file);
+                    try {
+                        // Try to move to cache first
+                        const success = cacheManager.moveToCache(filePath, path.basename(file, '.mp3'));
+                        if (!success) {
+                            // If moving to cache fails, delete the file
+                            fsHelper.delete(filePath);
+                            logger.info(`Deleted file: ${file}`);
+                        } else {
+                            logger.info(`Moved file to cache: ${file}`);
+                        }
+                    } catch (error) {
+                        logger.error(`Error processing file ${file}:`, error);
+                    }
+                }
+            }
+
             // Load initial tracks up to minQueueSize
-            logger.debug("Loading initial tracks...");
+            logger.info("Loading initial tracks...");
 
             // Load first track
-            const song = await fetchNextTrack()
-            const songBitrate = await this.getTrackBitrate(song.url)
-            this.tracks.push({ url: song.url, bitrate: songBitrate, title: song.title, duration: song?.duration, requestedBy: song?.requestedBy ?? "anonymous" });
-            logger.debug(`Added initial track: ${song.title}`);
+            const song = await fetchNextTrack();
+            const songBitrate = await this.getTrackBitrate(song.url);
+            this.tracks.push({ 
+                url: song.url, 
+                bitrate: songBitrate, 
+                title: song.title, 
+                duration: song?.duration, 
+                requestedBy: song?.requestedBy ?? "anonymous" 
+            });
+            logger.info(`Added initial track: ${song.title}`);
 
             this.ensureQueueSize();
 
-            logger.debug(`Loaded initial track and queued downloads. Current queue size: ${this.tracks.length}`);
+            logger.info(`Loaded initial track and queued downloads. Current queue size: ${this.tracks.length}`);
         } catch (error) {
             logger.error(`Error loading tracks: ${error.message}`);
             this.tracks = [];
@@ -217,19 +292,58 @@ class Queue {
 
         try {
             this.playing = false;
-            logger.debug("Skipping song:", this.currentTrack?.title || 'Unknown');
+            logger.info("Skipping song:", this.currentTrack?.title || 'Unknown');
 
             const hasNextTrack = this.tracks.length > 1;
 
             await this.cleanupCurrentStream();
 
-            // Delete track file if it exists in tracks folder
+            // Store current track as previous before skipping
+            if (this.currentTrack) {
+                this.previousTrack = { ...this.currentTrack };
+            }
+
+            // Move track to cache if it exists in tracks folder
             const currentTrack = this.tracks[0];
-            if (currentTrack?.url.startsWith('tracks/')) {
-                if (fsHelper.exists(currentTrack.url)) {
-                    fsHelper.delete(currentTrack.url);
-                    logger.debug(`Deleted track file: ${currentTrack.url}`);
+            if (currentTrack?.url) {
+                const normalizedPath = currentTrack.url.replace(/\\/g, '/');
+                logger.info(`Processing track for caching: ${currentTrack.title} (${normalizedPath})`);
+                
+                if (!normalizedPath.startsWith('tracks/')) {
+                    logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
+                    return;
                 }
+                
+                if (normalizedPath.includes('cache')) {
+                    logger.info(`Skipping cache for already cached file: ${currentTrack.url}`);
+                    return;
+                }
+
+                if (fsHelper.exists(currentTrack.url)) {
+                    const title = currentTrack.title || path.basename(currentTrack.url, '.mp3');
+                    logger.info(`File exists at ${currentTrack.url}, moving to cache...`);
+                    // Ensure we have the title before moving
+                    if (!title) {
+                        logger.error('Cannot move file to cache: missing title');
+                        return;
+                    }
+                    await new Promise((resolve) => {
+                        // Small delay to ensure file is not in use
+                        setTimeout(() => {
+                            const success = cacheManager.moveToCache(currentTrack.url, title);
+                            if (success) {
+                                logger.info(`Successfully moved ${title} to cache`);
+                            } else {
+                                logger.error(`Failed to move ${title} to cache`);
+                            }
+                            resolve();
+                        }, 100);
+                    });
+                } else {
+                    logger.info(`Track file not found at ${currentTrack.url}`);
+                }
+            } else {
+                logger.info(`No track URL available`);
             }
 
             this.tracks.shift();
@@ -244,7 +358,7 @@ class Queue {
 
                 while (this.tracks.length === 0) {
                     if (Date.now() - startTime > maxWaitTime) {
-                        logger.debug("No tracks available after waiting");
+                        logger.info("No tracks available after waiting");
                         break;
                     }
                     await new Promise(resolve => setTimeout(resolve, 100));
@@ -270,12 +384,12 @@ class Queue {
         if (!this.started() || !this.playing) return;
         this.playing = false;
         this.cleanupCurrentStream();
-        logger.debug("Paused");
+        logger.info("Paused");
     }
 
     resume() {
         if (!this.started() || this.playing) return;
-        logger.debug("Resumed");
+        logger.info("Resumed");
         this.play(false);
     }
 
@@ -341,8 +455,17 @@ class Queue {
             }
         });
 
-        this.ffmpegProcess.once('close', (code) => {
-            if (code !== 0 && this.playing && !this.isTransitioning) {
+        this.ffmpegProcess.once('close', async (code) => {
+            // Only handle non-zero exit codes when:
+            // 1. We're still playing
+            // 2. Not in transition
+            // 3. The current track still exists in the queue
+            if (code !== 0 && 
+                this.playing && 
+                !this.isTransitioning && 
+                this.tracks.length > 0 && 
+                this.tracks[0]?.url === this.currentTrack?.url) {
+                
                 logger.error(`FFmpeg process exited with code ${code}`);
                 this.play(true);
             }
@@ -357,22 +480,58 @@ class Queue {
         });
     }
 
-
-
     async handleTrackEnd() {
         if (!this.playing || this.isTransitioning) return;
 
-        logger.debug("Track ended, managing queue...");
+        logger.info("Track ended, managing queue...");
         this.isTransitioning = true;
 
         try {
-            // Delete track file if it exists in tracks folder
+            // Store current track as previous before it ends
+            if (this.currentTrack) {
+                this.previousTrack = { ...this.currentTrack };
+            }
+
+            // Move track to cache if it exists in tracks folder
             const currentTrack = this.tracks[0];
-            if (currentTrack?.url.startsWith('tracks/')) {
-                if (fsHelper.exists(currentTrack.url)) {
-                    fsHelper.delete(currentTrack.url);
-                    logger.debug(`Deleted track file: ${currentTrack.url}`);
+            if (currentTrack?.url) {
+                const normalizedPath = currentTrack.url.replace(/\\/g, '/');
+                logger.info(`Processing track for caching: ${currentTrack.title} (${normalizedPath})`);
+                
+                if (!normalizedPath.startsWith('tracks/')) {
+                    logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
+                    return;
                 }
+                
+                if (normalizedPath.includes('cache')) {
+                    logger.info(`Skipping cache for already cached file: ${currentTrack.url}`);
+                } else {
+                    if (fsHelper.exists(currentTrack.url)) {
+                        const title = currentTrack.title || path.basename(currentTrack.url, '.mp3');
+                        logger.info(`Found file at ${currentTrack.url}, moving to cache...`);
+                        // Ensure we have the title before moving
+                        if (!title) {
+                            logger.error('Cannot move file to cache: missing title');
+                            return;
+                        }
+                        await new Promise((resolve) => {
+                            // Small delay to ensure file is not in use
+                            setTimeout(() => {
+                                const success = cacheManager.moveToCache(currentTrack.url, title);
+                                if (success) {
+                                    logger.info(`Successfully moved ${title} to cache`);
+                                } else {
+                                    logger.error(`Failed to move ${title} to cache`);
+                                }
+                                resolve();
+                            }, 100);
+                        });
+                    } else {
+                        logger.info(`Track file not found at ${currentTrack.url}`);
+                    }
+                }
+            } else {
+                logger.info(`Track URL not in tracks folder: ${currentTrack?.url}`);
             }
 
             this.tracks.shift();
