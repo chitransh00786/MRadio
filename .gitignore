@@ -31,3 +31,4 @@ config/
 test.js
 .mp3
 cache
+docker/

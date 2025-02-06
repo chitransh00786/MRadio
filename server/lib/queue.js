@@ -309,39 +309,30 @@ class Queue {
                 const normalizedPath = currentTrack.url.replace(/\\/g, '/');
                 logger.info(`Processing track for caching: ${currentTrack.title} (${normalizedPath})`);
                 
-                if (!normalizedPath.startsWith('tracks/')) {
-                    logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
-                    return;
-                }
-                
                 if (normalizedPath.includes('cache')) {
                     logger.info(`Skipping cache for already cached file: ${currentTrack.url}`);
-                    return;
-                }
-
-                if (fsHelper.exists(currentTrack.url)) {
+                } else if (!normalizedPath.startsWith('tracks/')) {
+                    logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
+                } else if (fsHelper.exists(currentTrack.url)) {
                     const title = currentTrack.title || path.basename(currentTrack.url, '.mp3');
                     logger.info(`File exists at ${currentTrack.url}, moving to cache...`);
-                    // Ensure we have the title before moving
                     if (!title) {
                         logger.error('Cannot move file to cache: missing title');
-                        return;
+                    } else {
+                        await new Promise((resolve) => {
+                            setTimeout(() => {
+                                const success = cacheManager.moveToCache(currentTrack.url, title);
+                                if (success) {
+                                    logger.info(`Successfully moved ${title} to cache`);
+                                } else {
+                                    logger.error(`Failed to move ${title} to cache`);
+                                }
+                                resolve();
+                            }, 100);
+                        });
                     }
-                    await new Promise((resolve) => {
-                        // Small delay to ensure file is not in use
-                        setTimeout(() => {
-                            const success = cacheManager.moveToCache(currentTrack.url, title);
-                            if (success) {
-                                logger.info(`Successfully moved ${title} to cache`);
-                            } else {
-                                logger.error(`Failed to move ${title} to cache`);
-                            }
-                            resolve();
-                        }, 100);
-                    });
-                } else {
-                    logger.info(`Track file not found at ${currentTrack.url}`);
                 }
+
             } else {
                 logger.info(`No track URL available`);
             }
@@ -498,24 +489,17 @@ class Queue {
                 const normalizedPath = currentTrack.url.replace(/\\/g, '/');
                 logger.info(`Processing track for caching: ${currentTrack.title} (${normalizedPath})`);
                 
-                if (!normalizedPath.startsWith('tracks/')) {
-                    logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
-                    return;
-                }
-                
                 if (normalizedPath.includes('cache')) {
                     logger.info(`Skipping cache for already cached file: ${currentTrack.url}`);
-                } else {
-                    if (fsHelper.exists(currentTrack.url)) {
-                        const title = currentTrack.title || path.basename(currentTrack.url, '.mp3');
-                        logger.info(`Found file at ${currentTrack.url}, moving to cache...`);
-                        // Ensure we have the title before moving
-                        if (!title) {
-                            logger.error('Cannot move file to cache: missing title');
-                            return;
-                        }
+                } else if (!normalizedPath.startsWith('tracks/')) {
+                    logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
+                } else if (fsHelper.exists(currentTrack.url)) {
+                    const title = currentTrack.title || path.basename(currentTrack.url, '.mp3');
+                    logger.info(`File exists at ${currentTrack.url}, moving to cache...`);
+                    if (!title) {
+                        logger.error('Cannot move file to cache: missing title');
+                    } else {
                         await new Promise((resolve) => {
-                            // Small delay to ensure file is not in use
                             setTimeout(() => {
                                 const success = cacheManager.moveToCache(currentTrack.url, title);
                                 if (success) {
@@ -526,8 +510,6 @@ class Queue {
                                 resolve();
                             }, 100);
                         });
-                    } else {
-                        logger.info(`Track file not found at ${currentTrack.url}`);
                     }
                 }
             } else {
