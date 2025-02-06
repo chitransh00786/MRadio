@@ -4,7 +4,7 @@ import logger from '../utils/logger.js';
 import fsHelper from '../utils/helper/fs-helper.js';
 
 class CacheManager {
-    constructor(cacheDir = 'tracks/cache', maxCacheSize = 1024 * 1024 * 1024) {
+    constructor(cacheDir = 'cache', maxCacheSize = 1024 * 1024 * 1024) {
         this.cacheDir = cacheDir.replace(/\\/g, '/');
         this.maxCacheSize = maxCacheSize;
         this.ensureCacheDirectory();
