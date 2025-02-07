@@ -83,17 +83,17 @@ export const fetchNextTrack = async () => {
             logger.info(`Using cached version of: ${getFirst.title}`);
             songQueue.removeFromFront();
             return {
-                url: cachedPath, 
+                url: cachedPath,
                 title: getFirst.title,
                 duration: getFirst.duration,
-                requestedBy: getFirst.requestedBy 
+                requestedBy: getFirst.requestedBy
             };
         }
 
         // If not in cache, fetch next track from given URL type
         songResult = await fetchByUrlType(getFirst);
         songQueue.removeFromFront();
-        return { ...songResult, requestedBy: getFirst.requestedBy };
+        return { ...songResult, requestedBy: getFirst.requestedBy, duration: getFirst.duration };
     } catch (error) {
         logger.error('Error fetching next track:', error);
         songQueue.removeFromFront();
