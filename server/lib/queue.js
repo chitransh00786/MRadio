@@ -7,7 +7,7 @@ import path from 'path';
 import { fetchNextTrack } from "../services/nextTrackFetcherService.js";
 import fsHelper from "../utils/helper/fs-helper.js";
 import logger from "../utils/logger.js";
-import { getFfmpegPath } from "../utils/utils.js";
+import { getFfmpegPath, durationFormatter } from "../utils/utils.js";
 import cacheManager from "./cacheManager.js";
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
@@ -88,7 +88,7 @@ class Queue {
                             url: song.url,
                             bitrate: songBitrate,
                             title: song.title,
-                            duration: song?.duration ?? "00:00",
+                            duration: song?.duration ? durationFormatter(song.duration) : "00:00",
                             requestedBy: song?.requestedBy ?? "anonymous"
                         });
                         logger.info(`Added track: ${song.title}`);
@@ -192,7 +192,7 @@ class Queue {
                 url: song.url, 
                 bitrate: songBitrate, 
                 title: song.title, 
-                duration: song?.duration, 
+                duration: song?.duration ? durationFormatter(song.duration) : "00:00", 
                 requestedBy: song?.requestedBy ?? "anonymous" 
             });
             logger.info(`Added initial track: ${song.title}`);

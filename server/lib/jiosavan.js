@@ -23,7 +23,7 @@ class JioSavan {
                 title,
                 url: downloadedSong.url,
                 quality: songLink[3].quality,
-                duration: durationFormatter(duration),
+                duration: duration,
                 requestedBy: "auto"
             }
         } catch (error) {
@@ -51,7 +51,7 @@ class JioSavan {
                 title,
                 url: songLink[3].url,
                 quality: songLink[3].quality,
-                duration: durationFormatter(duration)
+                duration: duration
             }
         } catch (error) {
             logger.error(error);
