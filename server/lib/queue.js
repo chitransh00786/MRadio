@@ -84,11 +84,6 @@ class Queue {
                     const song = await fetchNextTrack();
                     if (this.tracks.length < this.minQueueSize) {
                         const songBitrate = await this.getTrackBitrate(song.url);
-                        logger.info('Adding song to queue:', { 
-                            title: song.title, 
-                            rawDuration: song?.duration,
-                            formattedDuration: song?.duration ? durationFormatter(song.duration) : "00:00"
-                        });
                         this.tracks.push({
                             url: song.url,
                             bitrate: songBitrate,

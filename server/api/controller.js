@@ -86,3 +86,81 @@ export const generateToken = async (req, res) => {
         res.status(400).json(errorRes({ error: error.message }, "Error generating token!"))
     }
 }
+
+export const blockCurrentSong = async (req, res) => {
+    try {
+        const response = await service.blockCurrentSong(req.body.requestedBy);
+        logger.info("Block current song api");
+        res.status(200).json(successRes(response, "Successfully blocked current song"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Error blocking current song"));
+    }
+};
+
+export const blockSongBySongName = async (req, res) => {
+    try {
+        if (!req.body.songName) {
+            throw new Error("Song name is required");
+        }
+        const response = await service.blockSongBySongName(req.body.songName, req.body.requestedBy);
+        res.status(200).json(successRes(response, "Successfully blocked song"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Error blocking song"));
+    }
+};
+
+export const unblockSongBySongName = async (req, res) => {
+    try {
+        if (!req.body.songName) {
+            throw new Error("Song name is required");
+        }
+        const response = await service.unblockSongBySongName(req.body.songName);
+        res.status(200).json(successRes(response, "Successfully unblocked song"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Error unblocking song"));
+    }
+};
+
+export const unblockSongByIndex = async (req, res) => {
+    try {
+        if (req.params.index === undefined) {
+            throw new Error("Index is required");
+        }
+        const response = await service.unblockSongByIndex(parseInt(req.params.index));
+        res.status(200).json(successRes(response, "Successfully unblocked song"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Error unblocking song"));
+    }
+};
+
+export const clearBlockList = async (req, res) => {
+    try {
+        const response = await service.clearBlockList();
+        logger.info("Clear block list api");
+        res.status(200).json(successRes(response, "Successfully cleared block list"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Error clearing block list"));
+    }
+};
+
+export const getAllBlockList = async (req, res) => {
+    try {
+        const response = await service.getAllBlockList();
+        logger.info("Get all block list api");
+        res.status(200).json(successRes(response, "Successfully fetched block list"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Error fetching block list"));
+    }
+};
+
+export const isSongBlocked = async (req, res) => {
+    try {
+        if (!req.query.songName) {
+            throw new Error("Song name is required");
+        }
+        const response = await service.isSongBlocked(req.query.songName);
+        res.status(200).json(successRes({ isBlocked: response }, "Successfully checked song block status"));
+    } catch (error) {
+        res.status(400).json(errorRes({ error: error.message }, "Error checking song block status"));
+    }
+};

@@ -1,6 +1,6 @@
 import fsHelper from "./helper/fs-helper.js";
 import { token_set_ratio } from 'fuzzball';
-import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION } from "./constant.js";
+import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION } from "./constant.js";
 import logger from "./logger.js";
 import secret from "./secret.js";
 import ffmpegStatic from 'ffmpeg-static';
@@ -43,6 +43,14 @@ export const saveTokenListJson = (data) => {
     return fsHelper.writeToJson(AUTH_TOKEN_LOCATION, data);
 }
 
+export const getBlockListJson = () => {
+    return fsHelper.readFromJson(BLOCK_LIST_LOCATION, []);
+}
+
+export const saveBlockListJson = (data) => {
+    return fsHelper.writeToJson(BLOCK_LIST_LOCATION, data);
+}
+
 export const getSpotifyConfigJson = () => {
     return fsHelper.readFromJson(SPOTIFY_TOKEN_LOCATION, {});
 }
@@ -51,18 +59,11 @@ export const getRandomNumber = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 export const durationFormatter = (duration) => {
-    logger.info('Duration formatter input:', { 
-        value: duration, 
-        type: typeof duration 
-    });
-
-    // If already in MM:SS format, return as is
     if (typeof duration === "string" && duration.includes(":")) {
         logger.info('Duration already formatted:', duration);
         return duration;
     }
 
-    // Convert to number (handles both string "284" and number 284)
     const numDuration = Number(duration);
 
     if (isNaN(numDuration)) {
@@ -78,7 +79,7 @@ export const durationFormatter = (duration) => {
 
 const SIMILARITY_THRESHOLD = 60;
 
-export const checkSimilarity = (original, found, source) => {
+export const checkSimilarity = (original, found, source = "default") => {
     const similarity = calculateSimilarity(original, found);
     if (similarity < SIMILARITY_THRESHOLD) {
         logger.info(`similarity less than ${SIMILARITY_THRESHOLD}: \n original: ${original} \n ${source}: found`);

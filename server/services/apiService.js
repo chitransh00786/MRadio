@@ -2,11 +2,22 @@ import queue from "../lib/queue.js";
 import { generate256BitToken } from "../utils/crypto.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import TokenManager from "../utils/queue/tokenManager.js";
+import BlockListManager from "../utils/queue/blockListManager.js";
 import { generateSongMetadata } from "./metadataFetcherService.js";
 import { durationFormatter } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 
 class Service {
+    constructor() {
+        this.blockListManager = new BlockListManager();
+    }
+
+    /**
+    * ==========================================
+    * Songs Related Services
+    * ==========================================
+    */
+
     async getCurrentSong() {
         const { title, duration, requestedBy } = queue.tracks[queue.index];
         const formattedDuration = durationFormatter(duration);
@@ -66,11 +77,85 @@ class Service {
         return { title: metadata.title, duration: metadata.duration, requestedBy };
     }
 
+    /**
+     * ==========================================
+     * Administrated Related Services
+     * ==========================================
+     */
     async generateToken(username) {
         const token = generate256BitToken();
         const tokenManager = new TokenManager();
         tokenManager.addToken({ token, username });
         return { token, username };
+    }
+
+    /**
+     * ==========================================
+     * Block List of songs Related Services
+     * ==========================================
+     */
+    async blockCurrentSong(requestedBy = "anonymous") {
+        try {
+            const songDetail = await this.getCurrentSong();
+            return await this.blockListManager.blockCurrentSong(songDetail.title, requestedBy);
+        } catch (error) {
+            logger.error("Error in blockCurrentSong service:", {error});
+            throw error;
+        }
+    }
+
+    async blockSongBySongName(songName, requestedBy) {
+        try {
+            return await this.blockListManager.blockSongBySongName(songName, requestedBy);
+        } catch (error) {
+            logger.error("Error in blockSongBySongName service:", {error});
+            throw error;
+        }
+    }
+
+    async unblockSongBySongName(songName) {
+        try {
+            return await this.blockListManager.unblockSongBySongName(songName);
+        } catch (error) {
+            logger.error("Error in unblockSongBySongName service:", {error});
+            throw error;
+        }
+    }
+
+    async unblockSongByIndex(index) {
+        try {
+            return await this.blockListManager.unblockSongByIndex(index);
+        } catch (error) {
+            logger.error("Error in unblockSongByIndex service:", {error});
+            throw error;
+        }
+    }
+
+    async clearBlockList() {
+        try {
+            return await this.blockListManager.clearBlockList();
+        } catch (error) {
+            logger.error("Error in clearBlockList service:", {error});
+            throw error;
+        }
+    }
+
+    async getAllBlockList() {
+        try {
+            return await this.blockListManager.getAllBlockList();
+        } catch (error) {
+            logger.error("Error in getAllBlockList service:", {error});
+            return [];
+        }
+    }
+
+    async isSongBlocked(songName) {
+        try {
+            return await this.blockListManager.isSongBlocked(songName);
+        } catch (error) {
+            logger.error("Error in isSongBlocked service:", {error});
+            return false;
+        }
     }
 }
 
