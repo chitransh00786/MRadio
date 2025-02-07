@@ -7,10 +7,9 @@ import { durationFormatter } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 
 class Service {
-
     async getCurrentSong() {
         const { title, duration, requestedBy } = queue.tracks[queue.index];
-        const formattedDuration = duration ? durationFormatter(duration) : "00:00";
+        const formattedDuration = durationFormatter(duration);
         return { title, duration: formattedDuration, requestedBy }
     }
 
@@ -21,7 +20,7 @@ class Service {
 
         // Format durations for both current tracks and queued songs
         const response = [...trackList, ...queueSongList].map((item, index) => {
-            const formattedDuration = item.duration ? durationFormatter(item.duration) : "00:00";
+            const formattedDuration = durationFormatter(item?.duration);
             return {
                 id: index + 1,
                 title: item.title,
@@ -34,7 +33,7 @@ class Service {
 
     async getUpcomingSong() {
         const { title, duration, requestedBy } = queue.tracks[(queue.index + 1) % queue.tracks.length];
-        const formattedDuration = duration ? durationFormatter(duration) : "00:00";
+        const formattedDuration = durationFormatter(duration);
         logger.info('Upcoming song duration:', {
             title,
             originalDuration: duration,
