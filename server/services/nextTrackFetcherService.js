@@ -62,9 +62,17 @@ export const fetchNextTrack = async () => {
         let songResult;
         const getFirst = songQueue.getFirstFromQueue();
 
-        // If Queue is empty, fetch next track randomly from hit songs.
         if (!getFirst) {
             songResult = await emptySongQueueHandler();
+            const cachedPath = cacheManager.getFromCache(songResult.title);
+            if (cachedPath) {
+                logger.info(`Using cached version of: ${songResult.title}`);
+                return {
+                    url: cachedPath,
+                    title: songResult.title,
+                    requestedBy: songResult.requestedBy
+                };
+            }
             return songResult;
         }
 
