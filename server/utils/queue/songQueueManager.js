@@ -1,5 +1,5 @@
 import logger from "../logger.js";
-import { getQueueListJson, saveQueueListJson } from "../utils.js";
+import { getQueueListJson, saveQueueListJson, durationFormatter } from "../utils.js";
 
 class SongQueueManager {
     constructor() {
@@ -7,7 +7,12 @@ class SongQueueManager {
     }
 
     readSongQueue() {
-        return getQueueListJson();
+        const queue = getQueueListJson();
+        // Format durations when loading from JSON
+        return queue.map(item => ({
+            ...item,
+            duration: item.duration ? durationFormatter(item.duration) : "00:00"
+        }));
     }
 
     saveSongQueue() {
@@ -23,7 +28,17 @@ class SongQueueManager {
             if (this.isDuplicate(item.url)) {
                 console.warn(`Duplicate item not added: ${item.url}`);
             } else {
-                this.queue.push(item);
+                // Format duration before adding to queue
+                const formattedItem = {
+                    ...item,
+                    duration: item.duration ? durationFormatter(item.duration) : "00:00"
+                };
+                logger.info('Adding to queue with duration:', {
+                    title: formattedItem.title,
+                    originalDuration: item.duration,
+                    formattedDuration: formattedItem.duration
+                });
+                this.queue.push(formattedItem);
                 this.saveSongQueue();
             }
         } else {
@@ -54,7 +69,17 @@ class SongQueueManager {
             if (this.isDuplicate(item.url)) {
                 console.warn(`Duplicate item not added: ${item.url}`);
             } else {
-                this.queue.unshift(item);
+                // Format duration before adding to queue
+                const formattedItem = {
+                    ...item,
+                    duration: item.duration ? durationFormatter(item.duration) : "00:00"
+                };
+                logger.info('Adding to front of queue with duration:', {
+                    title: formattedItem.title,
+                    originalDuration: item.duration,
+                    formattedDuration: formattedItem.duration
+                });
+                this.queue.unshift(formattedItem);
                 this.saveSongQueue();
             }
         } else {
