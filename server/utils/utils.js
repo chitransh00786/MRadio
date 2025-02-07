@@ -51,20 +51,37 @@ export const getRandomNumber = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 export const durationFormatter = (duration) => {
+    logger.info('Duration formatter input:', { 
+        value: duration, 
+        type: typeof duration 
+    });
+
+    // If already in MM:SS format, return as is
     if (typeof duration === "string" && duration.includes(":")) {
+        logger.info('Duration already formatted:', duration);
         return duration;
     }
 
+    // Convert to number (handles both string "284" and number 284)
     const numDuration = Number(duration);
 
     if (isNaN(numDuration)) {
-        return duration;
+        logger.info('Invalid duration, returning 00:00');
+        return "00:00";
     }
 
     const minutes = Math.floor(numDuration / 60);
-    const seconds = numDuration % 60;
+    const seconds = Math.floor(numDuration % 60);
+    const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    logger.info('Formatted duration:', {
+        input: duration,
+        minutes,
+        seconds,
+        result: formatted
+    });
 
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return formatted;
 };
 
 const SIMILARITY_THRESHOLD = 60;
