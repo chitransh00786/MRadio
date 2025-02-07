@@ -18,7 +18,7 @@ class Service {
         const songQueue = new SongQueueManager();
         const trackList = queue.tracks;
         const queueSongList = songQueue.printQueue();
-        
+
         // Format durations for both current tracks and queued songs
         const response = [...trackList, ...queueSongList].map((item, index) => {
             const formattedDuration = item.duration ? durationFormatter(item.duration) : "00:00";

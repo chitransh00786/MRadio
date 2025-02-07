@@ -70,6 +70,7 @@ export const fetchNextTrack = async () => {
                 return {
                     url: cachedPath,
                     title: songResult.title,
+                    duration: songResult.duration,
                     requestedBy: songResult.requestedBy
                 };
             }
@@ -84,6 +85,7 @@ export const fetchNextTrack = async () => {
             return {
                 url: cachedPath, 
                 title: getFirst.title,
+                duration: getFirst.duration,
                 requestedBy: getFirst.requestedBy 
             };
         }
