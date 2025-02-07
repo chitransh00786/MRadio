@@ -73,14 +73,6 @@ export const durationFormatter = (duration) => {
     const minutes = Math.floor(numDuration / 60);
     const seconds = Math.floor(numDuration % 60);
     const formatted = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    
-    logger.info('Formatted duration:', {
-        input: duration,
-        minutes,
-        seconds,
-        result: formatted
-    });
-
     return formatted;
 };
 

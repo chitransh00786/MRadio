@@ -33,11 +33,6 @@ class SongQueueManager {
                     ...item,
                     duration: item.duration ? durationFormatter(item.duration) : "00:00"
                 };
-                logger.info('Adding to queue with duration:', {
-                    title: formattedItem.title,
-                    originalDuration: item.duration,
-                    formattedDuration: formattedItem.duration
-                });
                 this.queue.push(formattedItem);
                 this.saveSongQueue();
             }
@@ -74,11 +69,6 @@ class SongQueueManager {
                     ...item,
                     duration: item.duration ? durationFormatter(item.duration) : "00:00"
                 };
-                logger.info('Adding to front of queue with duration:', {
-                    title: formattedItem.title,
-                    originalDuration: item.duration,
-                    formattedDuration: formattedItem.duration
-                });
                 this.queue.unshift(formattedItem);
                 this.saveSongQueue();
             }

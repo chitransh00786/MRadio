@@ -1,7 +1,7 @@
 import axios from "axios";
 import { JIO_SAVAN_SONG_SEARCH, JIO_SAVAN_TOP50 } from "../utils/constant.js";
 import { createDownloadLinks } from "../utils/crypto.js";
-import { durationFormatter, getRandomNumber } from "../utils/utils.js";
+import { getRandomNumber } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 import YouTubeDownloader from "./download.js";
 
@@ -15,13 +15,7 @@ class JioSavan {
             if (!songData) throw new Error("No Song Data Found");
 
             const { title, more_info } = songData;
-            logger.info('JioSavan Top50 API response:', { title, more_info });
             const { encrypted_media_url, duration } = more_info;
-            logger.info('Duration from Top50 API:', {
-                value: duration,
-                type: typeof duration,
-                moreInfo: more_info
-            });
             const songLink = createDownloadLinks(encrypted_media_url);
             const download = new YouTubeDownloader()
             const downloadedSong = await download.downloadFromUrl(songLink[3].url, title);
@@ -48,13 +42,7 @@ class JioSavan {
             const { title, more_info } = response.data.results[0];
 
             if (!title) throw new Error("No Song Data Found");
-            logger.info('JioSavan Search API response:', { title, more_info });
             const { encrypted_media_url, duration } = more_info;
-            logger.info('Duration from Search API:', {
-                value: duration,
-                type: typeof duration,
-                moreInfo: more_info
-            });
             if(duration > 600){
                 throw new Error("Song Duration is more than 10 minutes.")
             }

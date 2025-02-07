@@ -11,11 +11,6 @@ class Service {
     async getCurrentSong() {
         const { title, duration, requestedBy } = queue.tracks[queue.index];
         const formattedDuration = duration ? durationFormatter(duration) : "00:00";
-        logger.info('Current song duration:', {
-            title,
-            originalDuration: duration,
-            formattedDuration
-        });
         return { title, duration: formattedDuration, requestedBy }
     }
 
@@ -27,11 +22,6 @@ class Service {
         // Format durations for both current tracks and queued songs
         const response = [...trackList, ...queueSongList].map((item, index) => {
             const formattedDuration = item.duration ? durationFormatter(item.duration) : "00:00";
-            logger.info('Queue list item duration:', {
-                title: item.title,
-                originalDuration: item.duration,
-                formattedDuration
-            });
             return {
                 id: index + 1,
                 title: item.title,
