@@ -51,7 +51,7 @@ class JioSavan {
                 title,
                 url: songLink[3].url,
                 quality: songLink[3].quality,
-                duration: duration
+                duration: durationFormatter(duration)
             }
         } catch (error) {
             logger.error(error);
