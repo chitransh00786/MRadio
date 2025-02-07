@@ -1,5 +1,6 @@
 import { errorRes, successRes } from "../utils/response.js";
 import Service from "../services/apiService.js"
+import logger from "../utils/logger.js";
 
 const service = new Service();
 export const skip = async (req, res) => {
@@ -14,6 +15,7 @@ export const skip = async (req, res) => {
 export const getCurrentSong = async (req, res) => {
     try {
         const response = await service.getCurrentSong();
+        logger.info("Current Song api Response: ", { response })
         res.status(200).json(successRes(response, "Current Song"));
     } catch (error) {
         res.status(400).json(errorRes({ error: error.message }, "Current Song Error"));
@@ -33,6 +35,7 @@ export const previousSong = async (req, res) => {
 export const getUpcomingSong = async (req, res) => {
     try {
         const response = await service.getUpcomingSong();
+        logger.info("Upcoming Song api Response: ", { response })
         res.status(200).json(successRes(response, "Successfully Fetched upcoming Song"));
     } catch (error) {
         res.status(400).json(errorRes({ error: error.message }, "Upcoming Song Error"));
