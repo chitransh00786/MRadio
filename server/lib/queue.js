@@ -9,6 +9,7 @@ import fsHelper from "../utils/helper/fs-helper.js";
 import logger from "../utils/logger.js";
 import { getFfmpegPath, durationFormatter } from "../utils/utils.js";
 import cacheManager from "./cacheManager.js";
+import { DEFAULT_TRACKS_LOCATION } from "../utils/constant.js";
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 
@@ -42,7 +43,7 @@ class Queue {
             await this.cleanupCurrentStream();
 
             // Check if the previous track is in cache
-            if (this.previousTrack.url.startsWith('tracks/')) {
+            if (this.previousTrack.url.startsWith(`${DEFAULT_TRACKS_LOCATION}/`)) {
                 const cachedPath = cacheManager.getFromCache(this.previousTrack.title);
                 if (cachedPath) {
                     this.previousTrack.url = cachedPath;
@@ -52,13 +53,10 @@ class Queue {
                 }
             }
 
-            // Store current track as previous
             const temp = this.currentTrack;
             
-            // Set previous track as current
             this.currentTrack = this.previousTrack;
             
-            // Update previous track
             this.previousTrack = temp;
 
             this.playing = true;
@@ -153,13 +151,11 @@ class Queue {
 
     async loadTracks(dir) {
         try {
-            // Reset queue state
             this.tracks = [];
             this.index = 0;
             this.currentTrack = null;
             this.isDownloading = false;
 
-            // Clean up tracks directory before loading new tracks
             logger.info("Cleaning up tracks directory...");
             const tracksDir = path.join(process.cwd(), dir);
             if (fsHelper.exists(tracksDir)) {
@@ -167,10 +163,8 @@ class Queue {
                 for (const file of files) {
                     const filePath = path.join(tracksDir, file);
                     try {
-                        // Try to move to cache first
                         const success = cacheManager.moveToCache(filePath, path.basename(file, '.mp3'));
                         if (!success) {
-                            // If moving to cache fails, delete the file
                             fsHelper.delete(filePath);
                             logger.info(`Deleted file: ${file}`);
                         } else {
@@ -182,10 +176,8 @@ class Queue {
                 }
             }
 
-            // Load initial tracks up to minQueueSize
             logger.info("Loading initial tracks...");
 
-            // Load first track
             const song = await fetchNextTrack();
             const songBitrate = await this.getTrackBitrate(song.url);
             this.tracks.push({ 
@@ -219,18 +211,15 @@ class Queue {
     }
 
     async cleanupCurrentStream() {
-        // Immediately stop broadcasting any data
         this.playing = false;
 
         return new Promise((resolve) => {
             const cleanup = () => {
-                // Immediately kill FFmpeg process first to stop audio generation
                 if (this.ffmpegProcess) {
                     this.ffmpegProcess.removeAllListeners();
                     try {
                         process.kill(this.ffmpegProcess.pid, 'SIGKILL');
                     } catch (error) {
-                        // Ignore ESRCH errors (process already gone)
                         if (error.code !== 'ESRCH') {
                             logger.error('Error during FFmpeg cleanup:', { error });
                         }
@@ -238,14 +227,12 @@ class Queue {
                     this.ffmpegProcess = null;
                 }
 
-                // Then clean up the stream
                 if (this.stream) {
                     this.stream.removeAllListeners();
                     this.stream.destroy();
                     this.stream = null;
                 }
 
-                // Finally clean up the throttle
                 if (this.throttle) {
                     this.throttle.removeAllListeners();
                     this.throttle.destroy();
@@ -255,7 +242,6 @@ class Queue {
                 resolve();
             };
 
-            // Execute cleanup immediately
             cleanup();
         });
     }
@@ -263,13 +249,10 @@ class Queue {
     getNextTrack() {
         if (this.tracks.length === 0) return null;
 
-        // Ensure index is within bounds
         this.index = Math.min(this.index, this.tracks.length - 1);
 
-        // Get the next track
         this.currentTrack = this.tracks[this.index];
 
-        // Broadcast track change to all clients
         const metadata = {
             type: 'metadata',
             track: this.currentTrack.url.split('/').pop(),
@@ -298,12 +281,10 @@ class Queue {
 
             await this.cleanupCurrentStream();
 
-            // Store current track as previous before skipping
             if (this.currentTrack) {
                 this.previousTrack = { ...this.currentTrack };
             }
 
-            // Move track to cache if it exists in tracks folder
             const currentTrack = this.tracks[0];
             if (currentTrack?.url) {
                 const normalizedPath = currentTrack.url.replace(/\\/g, '/');
@@ -311,7 +292,7 @@ class Queue {
                 
                 if (normalizedPath.includes('cache')) {
                     logger.info(`Skipping cache for already cached file: ${currentTrack.url}`);
-                } else if (!normalizedPath.startsWith('tracks/')) {
+                } else if (!normalizedPath.startsWith(`${DEFAULT_TRACKS_LOCATION}/`)) {
                     logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
                 } else if (fsHelper.exists(currentTrack.url)) {
                     const title = currentTrack.title || path.basename(currentTrack.url, '.mp3');
@@ -413,7 +394,6 @@ class Queue {
         const track = this.currentTrack;
         if (!track) return;
 
-        // Ensure previous stream is cleaned up
         if (this.ffmpegProcess) {
             this.cleanupCurrentStream();
         }
@@ -428,8 +408,8 @@ class Queue {
             '-ac', '2',
             '-ar', '44100',
             '-f', 'mp3',
-            '-fflags', '+nobuffer',  // Reduce buffering
-            '-flags', '+low_delay',   // Minimize latency
+            '-fflags', '+nobuffer',
+            '-flags', '+low_delay',
             'pipe:1'
         ];
 
@@ -447,10 +427,6 @@ class Queue {
         });
 
         this.ffmpegProcess.once('close', async (code) => {
-            // Only handle non-zero exit codes when:
-            // 1. We're still playing
-            // 2. Not in transition
-            // 3. The current track still exists in the queue
             if (code !== 0 && 
                 this.playing && 
                 !this.isTransitioning && 
@@ -462,7 +438,6 @@ class Queue {
             }
         });
 
-        // Handle stream errors
         this.stream.on('error', (error) => {
             logger.error('Stream error:', { error });
             if (this.playing && !this.isTransitioning) {
@@ -478,12 +453,10 @@ class Queue {
         this.isTransitioning = true;
 
         try {
-            // Store current track as previous before it ends
             if (this.currentTrack) {
                 this.previousTrack = { ...this.currentTrack };
             }
 
-            // Move track to cache if it exists in tracks folder
             const currentTrack = this.tracks[0];
             if (currentTrack?.url) {
                 const normalizedPath = currentTrack.url.replace(/\\/g, '/');
@@ -491,7 +464,7 @@ class Queue {
                 
                 if (normalizedPath.includes('cache')) {
                     logger.info(`Skipping cache for already cached file: ${currentTrack.url}`);
-                } else if (!normalizedPath.startsWith('tracks/')) {
+                } else if (!normalizedPath.startsWith(`${DEFAULT_TRACKS_LOCATION}/`)) {
                     logger.info(`Track URL not in tracks folder: ${currentTrack.url}`);
                 } else if (fsHelper.exists(currentTrack.url)) {
                     const title = currentTrack.title || path.basename(currentTrack.url, '.mp3');

@@ -65,6 +65,10 @@ class Service {
 
     async addSongToQueue({ songName, requestedBy = "anonymous" }) {
         const metadata = await generateSongMetadata(songName, requestedBy);
+        const isBlocked = await this.isSongBlocked(metadata.title);
+        if (isBlocked) {
+            throw new Error("Song is blocked! You cannot play this song.");
+        }
         const songQueue = new SongQueueManager();
         songQueue.addToQueue(metadata);
         return { title: metadata.title, duration: metadata.duration, requestedBy };
@@ -72,6 +76,10 @@ class Service {
 
     async addSongToTop({ songName, requestedBy = "anonymous" }) {
         const metadata = await generateSongMetadata(songName, requestedBy);
+        const isBlocked = await this.isSongBlocked(metadata.title);
+        if (isBlocked) {
+            throw new Error("Song is blocked! You cannot play this song.");
+        }
         const songQueue = new SongQueueManager();
         songQueue.addToFront(metadata);
         return { title: metadata.title, duration: metadata.duration, requestedBy };

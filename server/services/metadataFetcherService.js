@@ -18,7 +18,7 @@ const searchSpotifySong = async (songName) => {
             throw new Error("Invalid song name");
         }
 
-        checkSimilarity(songName, name, "spotify");
+        checkSimilarity(songName, name);
         return { name, id };
     } catch (error) {
         console.error("Spotify search error:", error.message);
@@ -90,7 +90,7 @@ const createMetadata = (originalName, spotifyName, requestedBy) => ({
  * @returns 
  */
 const updateMetadata = (metadata, type, title, url, duration) => {
-    checkSimilarity(metadata.originalName, title, type);
+    checkSimilarity(metadata.originalName, title);
     return {
         ...metadata,
         title,

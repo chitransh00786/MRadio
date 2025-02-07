@@ -2,9 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import logger from '../utils/logger.js';
 import fsHelper from '../utils/helper/fs-helper.js';
+import { DEFAULT_CACHE_LOCATION, DEFAULT_TRACKS_LOCATION } from '../utils/constant.js';
 
 class CacheManager {
-    constructor(cacheDir = 'cache', maxCacheSize = 1024 * 1024 * 1024) {
+    constructor(cacheDir = DEFAULT_CACHE_LOCATION, maxCacheSize = 1024 * 1024 * 1024) {
         this.cacheDir = cacheDir.replace(/\\/g, '/');
         this.maxCacheSize = maxCacheSize;
         this.ensureCacheDirectory();
@@ -24,7 +25,7 @@ class CacheManager {
 
     getOriginalPath(title) {
         const safeTitle = title.replace(/[<>:"/\\|?*]/g, '');
-        return path.join('tracks', `${safeTitle}.mp3`).replace(/\\/g, '/');
+        return path.join(DEFAULT_TRACKS_LOCATION, `${safeTitle}.mp3`).replace(/\\/g, '/');
     }
 
     isCached(title) {

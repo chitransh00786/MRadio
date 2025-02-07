@@ -15,8 +15,8 @@ class BlockListManager {
     }
 
     #isSimilarSong(songName1, songName2) {
-        const similarity = checkSimilarity(songName1, songName2, "blockList");
-        return similarity >= 75;
+        const similarity = checkSimilarity(songName1, songName2);
+        return similarity >= 85;
     }
 
     async blockCurrentSong(songName, requestedBy) {

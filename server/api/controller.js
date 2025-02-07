@@ -8,7 +8,7 @@ export const skip = async (req, res) => {
         await service.skip();
         res.status(200).json(successRes({ skip: true }, "\nSkip Successful\nPlaying next song..."));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Skip Error"))
+        res.status(400).json(errorRes({ message: error.message }, "Skip Error"))
     }
 }
 
@@ -18,7 +18,7 @@ export const getCurrentSong = async (req, res) => {
         logger.info("Current Song api")
         res.status(200).json(successRes(response, "Current Song"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Current Song Error"));
+        res.status(400).json(errorRes({ message: error.message }, "Current Song Error"));
     }
 }
 
@@ -27,7 +27,7 @@ export const previousSong = async (req, res) => {
         const response = await service.previous();
         res.status(200).json(successRes(response, "Previous Song"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Previous song error"))
+        res.status(400).json(errorRes({ message: error.message }, "Previous song error"))
 
     }
 }
@@ -38,7 +38,7 @@ export const getUpcomingSong = async (req, res) => {
         logger.info("Upcoming Song api")
         res.status(200).json(successRes(response, "Successfully Fetched upcoming Song"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Upcoming Song Error"));
+        res.status(400).json(errorRes({ message: error.message }, "Upcoming Song Error"));
     }
 }
 
@@ -47,7 +47,7 @@ export const getQueueList = async (req, res) => {
         const response = await service.getQueueList();
         res.status(200).json(successRes(response, "Successfully Fetched Queue List"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Queue List Error"));
+        res.status(400).json(errorRes({ message: error.message }, "Queue List Error"));
     }
 }
 
@@ -59,7 +59,7 @@ export const addSongToQueue = async (req, res) => {
         const response = await service.addSongToQueue(req.body);
         res.status(200).json(successRes(response, "Successfully Added song to the queue"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Song Not Found!"))
+        res.status(400).json(errorRes({ message: error.message }, "Song Not Found!"))
     }
 }
 
@@ -71,7 +71,7 @@ export const addSongToTop = async (req, res) => {
         const response = await service.addSongToTop(req.body);
         res.status(200).json(successRes(response, "Successfully Added song to the queue"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Song Not Found!"))
+        res.status(400).json(errorRes({ message: error.message }, "Song Not Found!"))
     }
 }
 
@@ -83,7 +83,7 @@ export const generateToken = async (req, res) => {
         const response = await service.generateToken(req.body.username);
         res.status(200).json(successRes(response, "Successfully Generated token!"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Error generating token!"))
+        res.status(400).json(errorRes({ message: error.message }, "Error generating token!"))
     }
 }
 
@@ -105,7 +105,7 @@ export const blockSongBySongName = async (req, res) => {
         const response = await service.blockSongBySongName(req.body.songName, req.body.requestedBy);
         res.status(200).json(successRes(response, "Successfully blocked song"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Error blocking song"));
+        res.status(400).json(errorRes({ message: error.message }, "Error blocking song"));
     }
 };
 
@@ -117,7 +117,7 @@ export const unblockSongBySongName = async (req, res) => {
         const response = await service.unblockSongBySongName(req.body.songName);
         res.status(200).json(successRes(response, "Successfully unblocked song"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Error unblocking song"));
+        res.status(400).json(errorRes({ message: error.message }, "Error unblocking song"));
     }
 };
 
@@ -129,7 +129,7 @@ export const unblockSongByIndex = async (req, res) => {
         const response = await service.unblockSongByIndex(parseInt(req.params.index));
         res.status(200).json(successRes(response, "Successfully unblocked song"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Error unblocking song"));
+        res.status(400).json(errorRes({ message: error.message }, "Error unblocking song"));
     }
 };
 
@@ -139,7 +139,7 @@ export const clearBlockList = async (req, res) => {
         logger.info("Clear block list api");
         res.status(200).json(successRes(response, "Successfully cleared block list"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Error clearing block list"));
+        res.status(400).json(errorRes({ message: error.message }, "Error clearing block list"));
     }
 };
 
@@ -149,7 +149,7 @@ export const getAllBlockList = async (req, res) => {
         logger.info("Get all block list api");
         res.status(200).json(successRes(response, "Successfully fetched block list"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Error fetching block list"));
+        res.status(400).json(errorRes({ message: error.message }, "Error fetching block list"));
     }
 };
 
@@ -161,6 +161,6 @@ export const isSongBlocked = async (req, res) => {
         const response = await service.isSongBlocked(req.query.songName);
         res.status(200).json(successRes({ isBlocked: response }, "Successfully checked song block status"));
     } catch (error) {
-        res.status(400).json(errorRes({ error: error.message }, "Error checking song block status"));
+        res.status(400).json(errorRes({ message: error.message }, "Error checking song block status"));
     }
 };

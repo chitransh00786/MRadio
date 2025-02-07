@@ -1,6 +1,6 @@
 import fsHelper from "./helper/fs-helper.js";
 import { token_set_ratio } from 'fuzzball';
-import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION } from "./constant.js";
+import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION, DEFAULT_TRACKS_LOCATION } from "./constant.js";
 import logger from "./logger.js";
 import secret from "./secret.js";
 import ffmpegStatic from 'ffmpeg-static';
@@ -77,55 +77,7 @@ export const durationFormatter = (duration) => {
     return formatted;
 };
 
-const SIMILARITY_THRESHOLD = 60;
-
-export const checkSimilarity = (original, found, source = "default") => {
+export const checkSimilarity = (original, found) => {
     const similarity = calculateSimilarity(original, found);
-    if (similarity < SIMILARITY_THRESHOLD) {
-        logger.info(`similarity less than ${SIMILARITY_THRESHOLD}: \n original: ${original} \n ${source}: found`);
-    }
     return similarity;
 };
-
-export const checkStreamMethod = (urlType) => {
-    const streamMethod = {
-        youtube: 'download',
-        jiosavan: 'online'
-    };
-    return streamMethod[urlType] || 'download';
-}
-
-export const shouldDeleteSong = (urlType) => {
-    return checkStreamMethod(urlType) === 'download';
-}
-export const handleDeleteSong = async (urlType, filePath) => {
-    try {
-        if (!shouldDeleteSong(urlType)) {
-            logger.info(`Skipping deletion for online stream: ${filePath}`);
-            return;
-        }
-
-        if (fsHelper.exists(filePath)) {
-            fsHelper.delete(filePath);
-            logger.info(`Deleted song file: ${filePath}`);
-        }
-
-        const files = fsHelper.listFiles('tracks');
-        const tracksInQueue = queue.tracks.map(track => track.url);
-
-        for (const file of files) {
-            const trackPath = `tracks/${file}`;
-
-            if (!tracksInQueue.includes(trackPath)) {
-                try {
-                    fsHelper.delete(trackPath);
-                    logger.info(`Deleted unexpected file: ${trackPath}`);
-                } catch (error) {
-                    logger.error(`Error deleting file ${trackPath}:`, { error });
-                }
-            }
-        }
-    } catch (error) {
-        logger.error('Error in handleDeleteSong:', { error });
-    }
-}

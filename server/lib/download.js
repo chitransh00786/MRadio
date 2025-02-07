@@ -8,6 +8,7 @@ import { getFfmpegPath } from '../utils/utils.js';
 import axios from 'axios';
 import cacheManager from './cacheManager.js';
 import fsHelper from '../utils/helper/fs-helper.js';
+import { DEFAULT_TRACKS_LOCATION } from '../utils/constant.js';
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 class YouTubeDownloader {
@@ -58,7 +59,7 @@ class YouTubeDownloader {
         }
     }
 
-    async downloadVideo(url, title, outputPath = 'tracks') {
+    async downloadVideo(url, title, outputPath = DEFAULT_TRACKS_LOCATION) {
         // Check if song exists in cache first
         const cachedPath = cacheManager.getFromCache(title);
         if (cachedPath) {
@@ -99,7 +100,7 @@ class YouTubeDownloader {
         }
     }
 
-    async downloadFromUrl(url, title, outputPath = 'tracks') {
+    async downloadFromUrl(url, title, outputPath = DEFAULT_TRACKS_LOCATION) {
         // Check if song exists in cache first
         const cachedPath = cacheManager.getFromCache(title);
         if (cachedPath) {
