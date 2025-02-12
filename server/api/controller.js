@@ -96,10 +96,10 @@ export const addSongToTop = async (req, res) => {
 
 export const removeLastSongRequestedByUser = async (req, res) => {
     try {
-        if (!req.body.requestedBy) {
+        if (!req.params.requestedBy) {
             throw new Error("Requested by is required");
         }
-        const response = await service.removeLastSongRequestedByUser(req.body);
+        const response = await service.removeLastSongRequestedByUser(req.params);
         res.status(200).json(successRes(response, "Successfully Removed last song requested by user."));
     } catch (error) {
         logger.error("Error in Removing Last Song Requested By User API", { error });

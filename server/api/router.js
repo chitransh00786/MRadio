@@ -10,8 +10,8 @@ router.get("/songs/current", isValidUser, getCurrentSong);
 router.get("/songs/upcoming", isValidUser, getUpcomingSong);
 router.post("/songs/add", isValidUser, express.json(), addSongToQueue);
 router.post("/songs/add/top", isValidUser, express.json(), addSongToTop);
-router.post("/songs/requests/last", isValidUser, express.json(), removeLastSongRequestedByUser);
-router.post("/songs/remove/:index", isValidUser, removeSongFromQueue);
+router.delete("/songs/requests/last/:requestedBy", isValidUser, express.json(), removeLastSongRequestedByUser);
+router.delete("/songs/remove/:index", isValidUser, removeSongFromQueue);
 
 router.post("/songs/block/current", isValidUser, express.json(), blockCurrentSong);
 router.post("/songs/block", isValidUser, express.json(), blockSongBySongName);
