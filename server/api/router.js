@@ -15,7 +15,7 @@ router.delete("/songs/remove/:index", isValidUser, removeSongFromQueue);
 
 router.post("/songs/block/current", isValidUser, express.json(), blockCurrentSong);
 router.post("/songs/block", isValidUser, express.json(), blockSongBySongName);
-router.delete("/songs/block", isValidUser, express.json(), unblockSongBySongName);
+router.delete("/songs/block/:songName", isValidUser, unblockSongBySongName);
 router.delete("/songs/block/all", isValidUser, clearBlockList);
 router.delete("/songs/block/:index", isValidUser, unblockSongByIndex);
 

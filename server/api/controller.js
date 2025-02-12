@@ -147,10 +147,10 @@ export const blockSongBySongName = async (req, res) => {
 
 export const unblockSongBySongName = async (req, res) => {
     try {
-        if (!req.body.songName) {
+        if (!req.params.songName) {
             throw new Error("Song name is required");
         }
-        const response = await service.unblockSongBySongName(req.body.songName);
+        const response = await service.unblockSongBySongName(req.params.songName);
         res.status(200).json(successRes(response, "Successfully unblocked song"));
     } catch (error) {
         res.status(400).json(errorRes({ message: error.message }, "Error unblocking song"));
