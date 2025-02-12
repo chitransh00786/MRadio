@@ -8,6 +8,7 @@ export const skip = async (req, res) => {
         await service.skip();
         res.status(200).json(successRes({ skip: true }, "\nSkip Successful\nPlaying next song..."));
     } catch (error) {
+        logger.error("Error in skip API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Skip Error"))
     }
 }
@@ -15,9 +16,9 @@ export const skip = async (req, res) => {
 export const getCurrentSong = async (req, res) => {
     try {
         const response = await service.getCurrentSong();
-        logger.info("Current Song api")
         res.status(200).json(successRes(response, "Current Song"));
     } catch (error) {
+        logger.error("Error in get Current Song API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Current Song Error"));
     }
 }
@@ -27,6 +28,7 @@ export const previousSong = async (req, res) => {
         const response = await service.previous();
         res.status(200).json(successRes(response, "Previous Song"));
     } catch (error) {
+        logger.error("Error in Previous Song API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Previous song error"))
 
     }
@@ -38,6 +40,7 @@ export const getUpcomingSong = async (req, res) => {
         logger.info("Upcoming Song api")
         res.status(200).json(successRes(response, "Successfully Fetched upcoming Song"));
     } catch (error) {
+        logger.error("Error in Get Upcoming Song API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Upcoming Song Error"));
     }
 }
@@ -47,6 +50,7 @@ export const getQueueList = async (req, res) => {
         const response = await service.getQueueList();
         res.status(200).json(successRes(response, "Successfully Fetched Queue List"));
     } catch (error) {
+        logger.error("Error in Get Song Queue List API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Queue List Error"));
     }
 }
@@ -59,7 +63,21 @@ export const addSongToQueue = async (req, res) => {
         const response = await service.addSongToQueue(req.body);
         res.status(200).json(successRes(response, "Successfully Added song to the queue"));
     } catch (error) {
+        logger.error("Error in Adding Song to Queue API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Song Not Found!"))
+    }
+}
+
+export const removeSongFromQueue = async (req, res) => {
+    try {
+        if (!req.params.index) {
+            throw new Error("Invalid song index")
+        }
+        const response = await service.removeFromQueue(req.params);
+        res.status(200).json(successRes(response, "Successfully Removed song from the queue"));
+    } catch (error) {
+        logger.error("Error in Removing Song from Queue API", { error });
+        res.status(400).json(errorRes({ message: error.message }, error?.message ?? "Song Failed to remove from queue!"))
     }
 }
 
@@ -71,8 +89,26 @@ export const addSongToTop = async (req, res) => {
         const response = await service.addSongToTop(req.body);
         res.status(200).json(successRes(response, "Successfully Added song to the queue"));
     } catch (error) {
+        logger.error("Error in Adding Song to Top API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Song Not Found!"))
     }
+}
+
+export const removeLastSongRequestedByUser = async (req, res) => {
+    try {
+        if (!req.body.requestedBy) {
+            throw new Error("Requested by is required");
+        }
+        const response = await service.removeLastSongRequestedByUser(req.body);
+        res.status(200).json(successRes(response, "Successfully Removed last song requested by user."));
+    } catch (error) {
+        logger.error("Error in Removing Last Song Requested By User API", { error });
+        res.status(400).json(errorRes({ message: error.message }, error.message ?? "Failed to remove the last song requested by user."))
+    }
+}
+
+export const addToQueueFromYT = async (req, res) => {
+    // TODO: Implement this function to add songs from YouTube to the queue
 }
 
 export const generateToken = async (req, res) => {

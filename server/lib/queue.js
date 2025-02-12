@@ -9,7 +9,7 @@ import fsHelper from "../utils/helper/fs-helper.js";
 import logger from "../utils/logger.js";
 import { getFfmpegPath, durationFormatter } from "../utils/utils.js";
 import cacheManager from "./cacheManager.js";
-import { DEFAULT_TRACKS_LOCATION } from "../utils/constant.js";
+import { DEFAULT_QUEUE_SIZE, DEFAULT_TRACKS_LOCATION } from "../utils/constant.js";
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 
@@ -24,8 +24,8 @@ class Queue {
         this.throttle = null;
         this.ffmpegProcess = null;
         this.isDownloading = false;
-        this.minQueueSize = 2;
-        this.previousTrack = null;  // Store just the last played song
+        this.minQueueSize = DEFAULT_QUEUE_SIZE;
+        this.previousTrack = null;
     }
 
     async previous() {

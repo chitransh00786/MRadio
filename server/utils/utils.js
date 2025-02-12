@@ -60,7 +60,6 @@ export const getRandomNumber = (min, max) => {
 }
 export const durationFormatter = (duration) => {
     if (typeof duration === "string" && duration.includes(":")) {
-        logger.info('Duration already formatted:', duration);
         return duration;
     }
 

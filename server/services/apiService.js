@@ -6,6 +6,7 @@ import BlockListManager from "../utils/queue/blockListManager.js";
 import { generateSongMetadata } from "./metadataFetcherService.js";
 import { durationFormatter } from "../utils/utils.js";
 import logger from "../utils/logger.js";
+import { DEFAULT_QUEUE_SIZE } from "../utils/constant.js";
 
 class Service {
     constructor() {
@@ -85,6 +86,38 @@ class Service {
         return { title: metadata.title, duration: metadata.duration, requestedBy };
     }
 
+    async removeFromQueue({ index }) {
+        if (index <= DEFAULT_QUEUE_SIZE) {
+            throw new Error(`Cannot remove songs from positions 1 to ${DEFAULT_QUEUE_SIZE}`);
+        }
+        const songQueue = new SongQueueManager();
+        const removedItem = songQueue.removeAtIndex(index - DEFAULT_QUEUE_SIZE);
+        if (!removedItem) {
+            throw new Error("Invalid index or queue is empty.");
+        }
+        return { title: removedItem.title, duration: removedItem.duration, requestedBy: removedItem.requestedBy };
+    }
+
+    async removeLastSongRequestedByUser({ requestedBy }) {
+        if (!requestedBy) {
+            throw new Error("Username is required");
+        }
+        const songQueue = new SongQueueManager();
+        for (let i = songQueue.queue.length - 1; i >= 0; i--) {
+            if (songQueue.queue[i].requestedBy === requestedBy) {
+                const removedItem = songQueue.queue.splice(i, 1)[0];
+                songQueue.saveSongQueue();
+                return { title: removedItem.title, duration: removedItem.duration, requestedBy: removedItem.requestedBy };
+            }
+        }
+
+        throw new Error(`No songs found in queue for User: @${requestedBy}`);
+    }
+
+    async addSongToQueueFromYT({ songName, requestedBy = "anonymous" }) {
+        // TODO: Implement this logic to directly add song from youtube. Ignoring all checks.
+    }
+
     /**
      * ==========================================
      * Administrated Related Services
@@ -107,7 +140,7 @@ class Service {
             const songDetail = await this.getCurrentSong();
             return await this.blockListManager.blockCurrentSong(songDetail.title, requestedBy);
         } catch (error) {
-            logger.error("Error in blockCurrentSong service:", {error});
+            logger.error("Error in blockCurrentSong service:", { error });
             throw error;
         }
     }
@@ -116,7 +149,7 @@ class Service {
         try {
             return await this.blockListManager.blockSongBySongName(songName, requestedBy);
         } catch (error) {
-            logger.error("Error in blockSongBySongName service:", {error});
+            logger.error("Error in blockSongBySongName service:", { error });
             throw error;
         }
     }
@@ -125,7 +158,7 @@ class Service {
         try {
             return await this.blockListManager.unblockSongBySongName(songName);
         } catch (error) {
-            logger.error("Error in unblockSongBySongName service:", {error});
+            logger.error("Error in unblockSongBySongName service:", { error });
             throw error;
         }
     }
@@ -134,7 +167,7 @@ class Service {
         try {
             return await this.blockListManager.unblockSongByIndex(index);
         } catch (error) {
-            logger.error("Error in unblockSongByIndex service:", {error});
+            logger.error("Error in unblockSongByIndex service:", { error });
             throw error;
         }
     }
@@ -143,7 +176,7 @@ class Service {
         try {
             return await this.blockListManager.clearBlockList();
         } catch (error) {
-            logger.error("Error in clearBlockList service:", {error});
+            logger.error("Error in clearBlockList service:", { error });
             throw error;
         }
     }
@@ -152,7 +185,7 @@ class Service {
         try {
             return await this.blockListManager.getAllBlockList();
         } catch (error) {
-            logger.error("Error in getAllBlockList service:", {error});
+            logger.error("Error in getAllBlockList service:", { error });
             return [];
         }
     }
@@ -161,7 +194,7 @@ class Service {
         try {
             return await this.blockListManager.isSongBlocked(songName);
         } catch (error) {
-            logger.error("Error in isSongBlocked service:", {error});
+            logger.error("Error in isSongBlocked service:", { error });
             return false;
         }
     }
