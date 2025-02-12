@@ -3,10 +3,11 @@ import { generate256BitToken } from "../utils/crypto.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import TokenManager from "../utils/queue/tokenManager.js";
 import BlockListManager from "../utils/queue/blockListManager.js";
-import { generateSongMetadata } from "./metadataFetcherService.js";
+import { generatePlaylistMetadata, generateSongMetadata, searchYouTubeSong } from "./metadataFetcherService.js";
 import { durationFormatter } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 import { DEFAULT_QUEUE_SIZE } from "../utils/constant.js";
+import Yts from "../lib/yts.js";
 
 class Service {
     constructor() {
@@ -75,6 +76,26 @@ class Service {
         return { title: metadata.title, duration: metadata.duration, requestedBy };
     }
 
+    async addPlaylistToQueue({ source = "youtube", type = "playlist", playlistId, requestedBy = "anonymous" }) {
+        const metadata = await generatePlaylistMetadata(playlistId, source, requestedBy)
+        if (metadata.length <= 0) {
+            throw new Error("No songs found in the playlist.");
+        }
+        const songQueue = new SongQueueManager();
+        songQueue.addManyToQueue(metadata);
+        return { added: true, total: metadata.length }
+    }
+
+    async addPlaylistToTop({ source = "youtube", type = "playlist", playlistId, requestedBy = "anonymous" }) {
+        const metadata = await generatePlaylistMetadata(playlistId, source, requestedBy)
+        if (metadata.length <= 0) {
+            throw new Error("No songs found in the playlist.");
+        }
+        const songQueue = new SongQueueManager();
+        songQueue.addManyToTop(metadata);
+        return { added: true, total: metadata.length }
+    }
+
     async addSongToTop({ songName, requestedBy = "anonymous" }) {
         const metadata = await generateSongMetadata(songName, requestedBy);
         const isBlocked = await this.isSongBlocked(metadata.title);
@@ -114,8 +135,24 @@ class Service {
         throw new Error(`No songs found in queue for User: @${requestedBy}`);
     }
 
-    async addSongToQueueFromYT({ songName, requestedBy = "anonymous" }) {
-        // TODO: Implement this logic to directly add song from youtube. Ignoring all checks.
+    async addSongToQueueFromSource({ url, videoId, requestedBy = "anonymous", source = "youtube" }) {
+        const yts = new Yts();
+        const { status, message } = await yts.validateVideo(url);
+
+        if (!status) {
+            throw new Error(message);
+        }
+        const songDetail = await yts.getVideoDetailByUrl(videoId);
+        const metadata = {
+            requestedBy: requestedBy,
+            title: songDetail.title,
+            duration: songDetail.duration.timestamp,
+            url: songDetail.url,
+            urlType: "youtube"
+        };
+        const songQueue = new SongQueueManager();
+        songQueue.addToQueue(metadata);
+        return { title: metadata.title, duration: metadata.duration, requestedBy };
     }
 
     /**

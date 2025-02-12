@@ -68,6 +68,19 @@ export const addSongToQueue = async (req, res) => {
     }
 }
 
+export const addPlaylistToQueue = async (req, res) => {
+    try {
+        if (!req.body.playlistId) {
+            throw new Error("Invalid playlist Id");
+        }
+        const response = await service.addPlaylistToQueue(req.body);
+        res.status(200).json(successRes(response, `Successfully Added ${response.total} songs to the queue`));
+    } catch (error) {
+        logger.error("Error in Adding Song to Queue API", { error });
+        res.status(400).json(errorRes({ message: error.message }, "Something went wrong while adding playlist"))
+    }
+}
+
 export const removeSongFromQueue = async (req, res) => {
     try {
         if (!req.params.index) {
@@ -87,10 +100,36 @@ export const addSongToTop = async (req, res) => {
             throw new Error("Invalid song name")
         }
         const response = await service.addSongToTop(req.body);
-        res.status(200).json(successRes(response, "Successfully Added song to the queue"));
+        res.status(200).json(successRes(response, "Successfully Added Song to the queue"));
     } catch (error) {
         logger.error("Error in Adding Song to Top API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Song Not Found!"))
+    }
+}
+
+export const addPlaylistToTop = async (req, res) => {
+    try {
+        if (!req.body.playlistId) {
+            throw new Error("Invalid playlist Id")
+        }
+        const response = await service.addPlaylistToTop(req.body);
+        res.status(200).json(successRes(response, `Successfully Added ${response.total} songs to the queue`));
+    } catch (error) {
+        logger.error("Error in Adding Song to Top API", { error });
+        res.status(400).json(errorRes({ message: error.message }, "Something went wrong while adding playlist"))
+    }
+}
+
+export const addSongToQueueFromSource = async (req, res) => {
+    try {
+        if (!req.body.videoId || !req.body.url) {
+            throw new Error("url and videoId are Required");
+        }
+        const response = await service.addSongToQueueFromSource(req.body);
+        res.status(200).json(successRes(response, "Successfully Added song to the queue"));
+    } catch (error) {
+        logger.error("Error in Adding Song to Queue from Source API", { error });
+        res.status(400).json(errorRes({ message: error.message }, "Song Failed to add from source!"))
     }
 }
 

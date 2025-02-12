@@ -1,7 +1,8 @@
 import YouTubeDownloader from "../lib/download.js";
 import JioSavan from "../lib/jiosavan.js";
 import SpotifyAPI from "../lib/spotify.js";
-import { checkSimilarity, durationFormatter } from "../utils/utils.js";
+import Yts from "../lib/yts.js";
+import { addYoutubeVideoId, checkSimilarity, durationFormatter } from "../utils/utils.js";
 
 /**
  * @description Search song on spotify
@@ -45,7 +46,7 @@ const searchJioSaavnSong = async (spotifyName) => {
 /**
  * @description Search Song on Youtube
  */
-const searchYouTubeSong = async (spotifyName) => {
+export const searchYouTubeSong = async (spotifyName) => {
     try {
         const yt = new YouTubeDownloader();
         const { url, title, duration } = await yt.getVideoDetail(spotifyName);
@@ -101,7 +102,7 @@ const updateMetadata = (metadata, type, title, url, duration) => {
 };
 
 /**
- * @description Main function to generate metadata
+ * @description Main function to generate single song metadata
  * @param {*} songName 
  * @param {*} requestedBy 
  * @returns 
@@ -129,3 +130,35 @@ export const generateSongMetadata = async (songName, requestedBy) => {
         return null;
     }
 };
+
+
+export const searchYoutubePlaylist = async (playlistId, requestedBy) => {
+    const yts = new Yts();
+    const playlistArray = await yts.getPlaylistDetail(playlistId);
+    const playListMetadata = playlistArray
+        .filter((video) => video.duration.seconds <= 900)
+        .map((video) => ({
+            title: video.title,
+            duration: durationFormatter(video.duration.timestamp),
+            requestedBy: requestedBy,
+            url: addYoutubeVideoId(video.videoId),
+            urlType: "youtube"
+        }));
+    return playListMetadata;
+}
+
+/**
+ * @description Main function to generate playlist metadata
+ * @param {*} playlistId 
+ * @param {*} sourceName 
+ * @returns 
+ */
+export const generatePlaylistMetadata = async (playlistId, sourceName, requestedBy) => {
+    if (!sourceName || !playlistId) {
+        throw new Error("Invalid playlist parameters");
+    }
+    if (sourceName === "youtube") {
+        return await searchYoutubePlaylist(playlistId, requestedBy);
+    }
+    throw new Error("Unsupported playlist source");
+}

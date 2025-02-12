@@ -80,7 +80,7 @@ class SongQueueManager {
     removeFromFront() {
         if (this.queue.length > 0) {
             const removedItem = this.queue.shift();
-            this.saveSongQueue(); // Save updated queue
+            this.saveSongQueue();
             return removedItem;
         } else {
             console.error("Queue is empty.");
@@ -111,6 +111,68 @@ class SongQueueManager {
 
     printQueue() {
         return this.queue;
+    }
+
+    addManyToQueue(items) {
+        if (!Array.isArray(items)) {
+            console.error("Invalid input. Items must be an array of objects.");
+            return;
+        }
+
+        let addedCount = 0;
+        items.forEach(item => {
+            if (typeof item === "object" && item.title && item.url) {
+                if (this.isDuplicate(item.url)) {
+                    console.warn(`Duplicate item not added: ${item.url}`);
+                } else {
+                    const formattedItem = {
+                        ...item,
+                        duration: item.duration ? durationFormatter(item.duration) : "00:00"
+                    };
+                    this.queue.push(formattedItem);
+                    addedCount++;
+                }
+            } else {
+                console.error("Invalid item skipped. Item must be an object with 'title' and 'url'.");
+            }
+        });
+
+        if (addedCount > 0) {
+            this.saveSongQueue();
+        }
+        return addedCount;
+    }
+
+    addManyToTop(items) {
+        if (!Array.isArray(items)) {
+            console.error("Invalid input. Items must be an array of objects.");
+            return;
+        }
+
+        let addedCount = 0;
+        const validItems = [];
+        items.forEach(item => {
+            if (typeof item === "object" && item.title && item.url) {
+                if (this.isDuplicate(item.url)) {
+                    console.warn(`Duplicate item not added: ${item.url}`);
+                } else {
+                    const formattedItem = {
+                        ...item,
+                        duration: item.duration ? durationFormatter(item.duration) : "00:00"
+                    };
+                    validItems.unshift(formattedItem);
+                    addedCount++;
+                }
+            } else {
+                console.error("Invalid item skipped. Item must be an object with 'title' and 'url'.");
+            }
+        });
+
+        if (addedCount > 0) {
+            this.queue.unshift(...validItems);
+            this.saveSongQueue();
+        }
+        return addedCount;
     }
 }
 

@@ -4,7 +4,6 @@ import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION, DEFAULT_
 import logger from "./logger.js";
 import secret from "./secret.js";
 import ffmpegStatic from 'ffmpeg-static';
-import queue from "../lib/queue.js";
 /**
  * ====================
  * Common Utils
@@ -80,3 +79,16 @@ export const checkSimilarity = (original, found) => {
     const similarity = calculateSimilarity(original, found);
     return similarity;
 };
+
+export const extractYoutubePlaylistId = (url) => {
+    const urlParams = new URL(url).searchParams;
+    const playlistId = urlParams.get('list');
+    return playlistId;
+}
+
+export const addYoutubeVideoId = (videoId) => {
+    const baseUrl = 'https://www.youtube.com/watch';
+    const url = new URL(baseUrl);
+    url.searchParams.set('v', videoId);
+    return url.toString();
+}
