@@ -1,8 +1,16 @@
 import express from 'express';
-import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addSongToQueueFromSource } from './controller.js';
+import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addSongToQueueFromSource, sseEndpoint } from './controller.js';
 import { isAdmin, isValidUser } from './middleware.js';
 const router = express.Router();
 
+// SSE endpoint should not use any middleware to maintain connection
+router.get("/sse", (req, res, next) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+}, sseEndpoint);
 router.get("/songs/skip", isValidUser, skip);
 router.get("/songs/previous", isValidUser, previousSong)
 router.get("/songs/queue", isValidUser, getQueueList);

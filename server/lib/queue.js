@@ -10,6 +10,7 @@ import logger from "../utils/logger.js";
 import { getFfmpegPath, durationFormatter } from "../utils/utils.js";
 import cacheManager from "./cacheManager.js";
 import { DEFAULT_QUEUE_SIZE, DEFAULT_TRACKS_LOCATION } from "../utils/constant.js";
+import { sendSSEData } from "./sseManager.js";
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 
@@ -384,6 +385,12 @@ class Queue {
             await this.cleanupCurrentStream();
             this.loadTrackStream();
             this.start();
+            const songData = {
+                title: this.currentTrack.title,
+                duration: this.currentTrack.duration,
+                requestedBy: this.currentTrack.requestedBy
+            }
+            sendSSEData(songData, 'newSong');
         } catch (error) {
             logger.error('Error during play:', { error });
             this.playing = false;

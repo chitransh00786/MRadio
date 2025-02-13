@@ -7,6 +7,10 @@ import { DEFAULT_TRACKS_LOCATION } from "./utils/constant.js";
 
 const PORT = 9126;
 const app = express();
+
+// Disable response buffering for SSE
+app.set('x-powered-by', false);
+app.set('etag', false);
 const server = http.createServer(app);
 const io = new IOServer(server);
 

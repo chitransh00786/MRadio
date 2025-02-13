@@ -1,5 +1,6 @@
 import queue from "../lib/queue.js";
 import { generate256BitToken } from "../utils/crypto.js";
+import { sendSSEData } from "../lib/sseManager.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import TokenManager from "../utils/queue/tokenManager.js";
 import BlockListManager from "../utils/queue/blockListManager.js";

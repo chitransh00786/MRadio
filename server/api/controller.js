@@ -1,15 +1,25 @@
 import { errorRes, successRes } from "../utils/response.js";
 import Service from "../services/apiService.js"
 import logger from "../utils/logger.js";
+import { initSSE } from '../lib/sseManager.js';
 
 const service = new Service();
+export const sseEndpoint = (req, res) => {
+    try {
+        initSSE(req, res);
+    } catch (error) {
+        logger.error("Error initializing SSE:", error);
+        res.status(500).json(errorRes({ message: error.message }, "SSE initialization failed"));
+    }
+};
+
 export const skip = async (req, res) => {
     try {
         await service.skip();
         res.status(200).json(successRes({ skip: true }, "\nSkip Successful\nPlaying next song..."));
     } catch (error) {
         logger.error("Error in skip API", { error });
-        res.status(400).json(errorRes({ message: error.message }, "Skip Error"))
+        logger.error("Failed to skip song after response sent:", {error});
     }
 }
 
