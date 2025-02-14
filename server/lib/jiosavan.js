@@ -56,7 +56,7 @@ class JioSavan {
         } catch (error) {
             logger.error(error);
             logger.error("Failed after retrying:", { error });
-            throw error;
+            return;
         }
     }
 }

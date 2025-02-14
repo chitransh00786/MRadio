@@ -15,7 +15,7 @@ class Yts {
             return result;
         } catch (error) {
             logger.error("Error getting details: " + error.message);
-            throw error;
+            return;
         }
     }
 

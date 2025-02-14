@@ -155,7 +155,6 @@ export const generateSongMetadata = async (songName, requestedBy) => {
     }
 };
 
-
 export const searchYoutubePlaylist = async (playlistId, requestedBy) => {
     const yts = new Yts();
     const playlistArray = await yts.getPlaylistDetail(playlistId);
