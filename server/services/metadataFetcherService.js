@@ -14,14 +14,15 @@ const searchSpotifySong = async (songName) => {
     try {
         const spotify = new SpotifyAPI();
         const songDetail = await spotify.searchTrack(songName);
-        const { name, id } = songDetail;
-
+        const { name, id, artists } = songDetail;
+        let artistName = '';
+        if(artists.length > 0){
+            artistName = artists[0].name;
+        }
         if (!name) {
             throw new Error("Invalid song name");
         }
-
-        checkSimilarity(songName, name);
-        return { name, id };
+        return { name: `${name} ${artistName}`, id };
     } catch (error) {
         console.error("Spotify search error:", error.message);
         return null;
@@ -55,7 +56,7 @@ const searchSoundCloudSong = async (spotifyName) => {
         const song = await soundCloud.getSongBySongName(spotifyName);
         return song;
     } catch (error) {
-        console.error("JioSaavn search error:", error.message);
+        console.error("SoundCloud search error:", error.message);
         return null;
     }
 };
@@ -66,14 +67,14 @@ const searchSoundCloudSong = async (spotifyName) => {
 export const searchYouTubeSong = async (spotifyName) => {
     try {
         const yt = new Yts();
-        const { url, title, duration } = await yt.getVideoDetail(spotifyName);
+        const { url, title, timestamp } = await yt.getVideoDetail(spotifyName);
         const { status, message } = await yt.validateVideo(url);
 
         if (!status) {
             throw new Error(message);
         }
 
-        return { url, title, duration };
+        return { url, title, duration: timestamp };
     } catch (error) {
         console.error("YouTube search error:", error.message);
         return null;

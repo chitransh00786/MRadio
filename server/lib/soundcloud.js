@@ -1,6 +1,7 @@
 import SoundCloudScraper from "soundcloud-scraper";
 import logger from "../utils/logger.js";
 import secret from "../utils/secret.js";
+import { checkSimilarity } from "../utils/utils.js";
 
 const GENRES = ['pop', 'rock', 'hip-hop', 'electronic', 'classical', 'jazz'];
 
@@ -14,19 +15,25 @@ class SoundCloud {
             // Search for the song
             const songs = await this.client.search(songName, 'track');
             if (!songs || songs.length === 0) {
-                throw new Error("No Song Data Found");
+                return;
             }
 
-            const songData = songs[0];
+            const songData = songs.find(track => checkSimilarity(songName, track.name) > 60);
+            if(!songData){
+                return;
+            }
             const song = await this.client.getSongInfo(songData.url);
-            if (!song) throw new Error("No Song Data Found");
+            if (!song) return;
 
             // Check duration (convert ms to seconds)
             const duration = Math.floor(song.duration / 1000);
             if (duration > 600) {
                 throw new Error("Song Duration is more than 10 minutes.");
             }
-            
+            const url = song.streams.progressive  ?? song.trackURL
+            if(!url.includes('/stream/progressive')){
+                return;
+            }
             return {
                 title: song.title,
                 url: song.trackURL ?? song.streams.progressive,
@@ -39,7 +46,7 @@ class SoundCloud {
         }
     }
 
-    async fetchStreamUrl(url){
+    async fetchStreamUrl(url) {
         try {
             const stream = await this.client.fetchStreamURL(url);
             return stream;

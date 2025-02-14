@@ -1,17 +1,18 @@
 import ytdl from 'youtube-dl-exec';
 import yts from 'yt-search'
 import logger from '../utils/logger.js';
-import { getCookiesPath } from '../utils/utils.js';
+import { checkSimilarity, getCookiesPath } from '../utils/utils.js';
 
 class Yts {
     async getVideoDetail(name, artistName) {
         try {
             const r = await yts({ query: `${name} - ${artistName} official audio song music`, category: 'music' });
             if (r.videos?.length === 0) {
-                throw new Error('No video found for the given name and artist');
+                return;
             }
 
-            return r.videos[0];
+            const result = r.videos.find(track => checkSimilarity(name, track.title) > 60);
+            return result;
         } catch (error) {
             logger.error("Error getting details: " + error.message);
             throw error;
@@ -22,7 +23,7 @@ class Yts {
         try {
             const r = await yts({ videoId: videoId });
             if (r.videos?.length === 0) {
-                throw new Error('No video found for the given name and artist');
+                return;
             }
             return r;
         } catch (error) {

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { JIO_SAVAN_SONG_SEARCH, JIO_SAVAN_TOP50 } from "../utils/constant.js";
 import { createDownloadLinks } from "../utils/crypto.js";
-import { getRandomNumber } from "../utils/utils.js";
+import { checkSimilarity, getRandomNumber } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 import MyDownloader from "./download.js";
 
@@ -39,19 +39,19 @@ class JioSavan {
     async getSongBySongName(songName, retryCount = 1) {
         try {
             const response = await axios.get(JIO_SAVAN_SONG_SEARCH(songName));
-            const { title, more_info } = response.data.results[0];
+            const results = response.data.results.find(track => checkSimilarity(songName, track.title) > 60);
+            if (!results) return;
+            const moreInfo = results.more_info;
 
-            if (!title) throw new Error("No Song Data Found");
-            const { encrypted_media_url, duration } = more_info;
-            if(duration > 600){
+            if(moreInfo.duration > 600){
                 throw new Error("Song Duration is more than 10 minutes.")
             }
-            const songLink = createDownloadLinks(encrypted_media_url);
+            const songLink = createDownloadLinks(moreInfo.encrypted_media_url);
             return {
-                title,
+                title: results.title,
                 url: songLink[3].url,
                 quality: songLink[3].quality,
-                duration: duration
+                duration: moreInfo.duration
             }
         } catch (error) {
             logger.error(error);
