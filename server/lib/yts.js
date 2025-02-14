@@ -50,24 +50,6 @@ class Yts {
                 throw new Error('No valid YouTube cookies found in cookies.txt');
             }
 
-            // Check cookie expiration
-            const now = Math.floor(Date.now() / 1000);
-            for (const line of cookieLines) {
-                const parts = line.split('\t');
-                if (parts.length >= 5) {
-                    const expiryEpoch = parseInt(parts[4]);
-                    if (!isNaN(expiryEpoch)) {
-                        const daysUntilExpiry = Math.floor((expiryEpoch - now) / 86400);
-                        if (daysUntilExpiry <= 0) {
-                            throw new Error('YouTube cookies have expired. Please update cookies.txt with fresh cookies.');
-                        }
-                        if (daysUntilExpiry <= 7) {
-                            logger.warn(`Warning: YouTube cookies will expire in ${daysUntilExpiry} days. Please update them soon.`);
-                        }
-                    }
-                }
-            }
-
             const info = await ytdl(url, {
                 dumpSingleJson: true,
                 noWarnings: true,
