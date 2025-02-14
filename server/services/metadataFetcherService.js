@@ -1,5 +1,6 @@
-import YouTubeDownloader from "../lib/download.js";
+import MyDownloader from "../lib/download.js";
 import JioSavan from "../lib/jiosavan.js";
+import SoundCloud from "../lib/soundcloud.js";
 import SpotifyAPI from "../lib/spotify.js";
 import Yts from "../lib/yts.js";
 import { addYoutubeVideoId, checkSimilarity, durationFormatter } from "../utils/utils.js";
@@ -36,6 +37,22 @@ const searchJioSaavnSong = async (spotifyName) => {
     try {
         const jio = new JioSavan();
         const song = await jio.getSongBySongName(spotifyName);
+        return song;
+    } catch (error) {
+        console.error("JioSaavn search error:", error.message);
+        return null;
+    }
+};
+
+/**
+ * @description Search song on JioSavan
+ * @param {*} spotifyName 
+ * @returns 
+ */
+const searchSoundCloudSong = async (spotifyName) => {
+    try {
+        const soundCloud = new SoundCloud();
+        const song = await soundCloud.getSongBySongName(spotifyName);
         return song;
     } catch (error) {
         console.error("JioSaavn search error:", error.message);
@@ -115,6 +132,10 @@ export const generateSongMetadata = async (songName, requestedBy) => {
         }
         const metadata = createMetadata(songName, spotifyResult.name, requestedBy);
 
+        const soundCloudResult = await searchSoundCloudSong(spotifyResult.name);
+        if(soundCloudResult){
+            return updateMetadata(metadata, "soundcloud", soundCloudResult.title, soundCloudResult.url, soundCloudResult.duration);
+        }
         const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
         if (jioSaavnResult) {
             return updateMetadata(metadata, "jiosavan", jioSaavnResult.title, jioSaavnResult.url, jioSaavnResult.duration);

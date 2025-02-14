@@ -9,9 +9,10 @@ import axios from 'axios';
 import cacheManager from './cacheManager.js';
 import fsHelper from '../utils/helper/fs-helper.js';
 import { DEFAULT_TRACKS_LOCATION } from '../utils/constant.js';
+import SoundCloud from './soundcloud.js';
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
-class YouTubeDownloader {
+class MyDownloader {
     
     async testCookies() {
         try {
@@ -168,6 +169,12 @@ class YouTubeDownloader {
             throw error;
         }
     }
+
+    async downloadSoundCloud(url, title){
+        const download = new SoundCloud();
+        const streamUrl = await download.fetchStreamUrl(url);
+        return await this.downloadFromUrl(streamUrl, title)
+    }
 }
 
-export default YouTubeDownloader;
+export default MyDownloader;

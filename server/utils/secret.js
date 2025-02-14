@@ -9,4 +9,5 @@ export default {
     X_ADMIN_API_KEY: process.env.X_ADMIN_API_KEY,
     X_ADMIN_TOKEN_KEY: process.env.X_ADMIN_TOKEN_KEY,
     YT_API_KEY: process.env.YT_API_KEY,
+    SOUNDCLOUD_API_KEY: process.env.SOUNDCLOUD_API_KEY
 }

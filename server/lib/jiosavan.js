@@ -3,7 +3,7 @@ import { JIO_SAVAN_SONG_SEARCH, JIO_SAVAN_TOP50 } from "../utils/constant.js";
 import { createDownloadLinks } from "../utils/crypto.js";
 import { getRandomNumber } from "../utils/utils.js";
 import logger from "../utils/logger.js";
-import YouTubeDownloader from "./download.js";
+import MyDownloader from "./download.js";
 
 class JioSavan {
     async getRandomFromTop50(retryCount = 1) {
@@ -17,7 +17,7 @@ class JioSavan {
             const { title, more_info } = songData;
             const { encrypted_media_url, duration } = more_info;
             const songLink = createDownloadLinks(encrypted_media_url);
-            const download = new YouTubeDownloader()
+            const download = new MyDownloader()
             const downloadedSong = await download.downloadFromUrl(songLink[3].url, title);
             return {
                 title,
