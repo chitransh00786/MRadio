@@ -14,9 +14,12 @@ const searchSpotifySong = async (songName) => {
     try {
         const spotify = new SpotifyAPI();
         const songDetail = await spotify.searchTrack(songName);
+        if(!songDetail){
+            throw new Error("No Song found By this Name");
+        } 
         const { name, id, artists } = songDetail;
         let artistName = '';
-        if(artists.length > 0){
+        if (artists.length > 0) {
             artistName = artists[0].name;
         }
         if (!name) {
@@ -25,7 +28,6 @@ const searchSpotifySong = async (songName) => {
         return { name: `${name} ${artistName}`, id };
     } catch (error) {
         console.error("Spotify search error:", error.message);
-        return null;
     }
 };
 
@@ -134,7 +136,7 @@ export const generateSongMetadata = async (songName, requestedBy) => {
         const metadata = createMetadata(songName, spotifyResult.name, requestedBy);
 
         const soundCloudResult = await searchSoundCloudSong(spotifyResult.name);
-        if(soundCloudResult){
+        if (soundCloudResult) {
             return updateMetadata(metadata, "soundcloud", soundCloudResult.title, soundCloudResult.url, soundCloudResult.duration);
         }
         const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
@@ -149,7 +151,7 @@ export const generateSongMetadata = async (songName, requestedBy) => {
         throw new Error("Song not found on any platform");
     } catch (error) {
         console.error("Error generating metadata:", error.message);
-        return null;
+        throw error;
     }
 };
 

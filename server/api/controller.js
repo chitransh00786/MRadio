@@ -64,7 +64,7 @@ export const addSongToQueue = async (req, res) => {
         const response = await service.addSongToQueue(req.body);
         res.status(200).json(successRes(response, "Successfully Added song to the queue"));
     } catch (error) {
-        logger.error("Error in Adding Song to Queue API", { error });
+        logger.error("Error in Adding Song to Queue API", { error: error.message, stack: error.stack });
         res.status(400).json(errorRes({ message: error.message }, "Song Not Found!"))
     }
 }
@@ -77,7 +77,7 @@ export const addPlaylistToQueue = async (req, res) => {
         const response = await service.addPlaylistToQueue(req.body);
         res.status(200).json(successRes(response, `Successfully Added ${response.total} songs to the queue`));
     } catch (error) {
-        logger.error("Error in Adding Song to Queue API", { error });
+        logger.error("Error in Adding Playlist to Queue API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Something went wrong while adding playlist"))
     }
 }
