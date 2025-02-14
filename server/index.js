@@ -1,6 +1,6 @@
 import express from "express";
 import http from "http";
-import { Server as IOServer } from "socket.io";
+import socketManager from "./lib/socketManager.js";
 import queue from "./lib/queue.js";
 import router from "./api/router.js";
 import { DEFAULT_TRACKS_LOCATION } from "./utils/constant.js";
@@ -12,8 +12,6 @@ const app = express();
 app.set('x-powered-by', false);
 app.set('etag', false);
 const server = http.createServer(app);
-const io = new IOServer(server);
-
 app.get("/", function (req, res) {
     res.redirect('/stream');
 });
@@ -22,25 +20,8 @@ app.get("/", function (req, res) {
     await queue.loadTracks(DEFAULT_TRACKS_LOCATION);
     queue.play();
 
-    io.on("connection", (socket) => {
-        // Every new streamer must receive the header
-        if (queue.bufferHeader) {
-            socket.emit("bufferHeader", queue.bufferHeader);
-        }
-
-        socket.on("bufferHeader", (header) => {
-            queue.bufferHeader = header;
-            socket.broadcast.emit("bufferHeader", queue.bufferHeader);
-        });
-
-        socket.on("stream", (packet) => {
-            // Only broadcast microphone if a header has been received
-            if (!queue.bufferHeader) return;
-
-            // Audio stream from host microphone
-            socket.broadcast.emit("stream", packet);
-        });
-    });
+    // Initialize socket.io with queue for streaming
+    socketManager.initialize(server, queue);
     app.use("/api", router);
     // HTTP stream for music
     app.get("/stream", (req, res) => {
