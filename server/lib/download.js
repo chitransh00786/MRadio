@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import logger from '../utils/logger.js';
 import ffmpeg from 'fluent-ffmpeg';
-import { getFfmpegPath } from '../utils/utils.js';
+import { getFfmpegPath, getCookiesPath } from '../utils/utils.js';
 import axios from 'axios';
 import cacheManager from './cacheManager.js';
 import fsHelper from '../utils/helper/fs-helper.js';
@@ -12,6 +12,27 @@ import { DEFAULT_TRACKS_LOCATION } from '../utils/constant.js';
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 class YouTubeDownloader {
+    
+    async testCookies() {
+        try {
+            const cookiesPath = getCookiesPath();
+            logger.info('Testing YouTube cookies...');
+            
+            // Test with a known age-restricted video that requires authentication
+            const testUrl = 'https://www.youtube.com/watch?v=tPx-7Grk_UY';
+            const result = await ytdl(testUrl, {
+                dumpSingleJson: true,
+                cookies: cookiesPath,
+                verbose: true
+            });
+            
+            logger.info('YouTube cookies are working correctly');
+            return true;
+        } catch (error) {
+            logger.error('YouTube cookie test failed:', error);
+            return false;
+        }
+    }
 
     async getVideoDetail(name, artistName) {
         try {
@@ -24,38 +45,6 @@ class YouTubeDownloader {
         } catch (error) {
             logger.error("Error getting details: " + error.message);
             throw error;
-        }
-    }
-
-    async validateVideo(url) {
-        try {
-            const info = await ytdl(url, {
-                dumpSingleJson: true,
-                noWarnings: true,
-                noCallHome: true,
-                noCheckCertificate: true
-            });
-
-            const duration = parseInt(info.duration);
-
-            if (duration > 600) {
-                return { status: false, message: 'Video duration exceeds 10 minutes' };
-            }
-
-            const categories = info.categories || [];
-            const tags = info.tags || [];
-            const isMusicCategory =
-                categories.some(cat => cat.toLowerCase().includes('music')) ||
-                tags.some(tag => tag.toLowerCase().includes('music'));
-
-            if (!isMusicCategory) {
-                return { status: false, message: 'Video is not in the Music category' };
-            }
-
-            return { status: true, message: "Successfull" };
-        } catch (error) {
-            logger.error('Video validation error:', error);
-            return { status: false, message: "Video validation error: " }
         }
     }
 
@@ -77,19 +66,33 @@ class YouTubeDownloader {
         const outputFilePath = cacheManager.getOriginalPath(title);
         logger.info(`Downloading ${title} to ${outputFilePath}`);
         try {
+            const cookiesPath = getCookiesPath();
+            
+            const cookiesContent = fs.readFileSync(cookiesPath, 'utf8');
+            const cookieLines = cookiesContent.split('\n').filter(line => 
+                line.trim() && !line.startsWith('#') && line.includes('.youtube.com')
+            );
+
+            if (cookieLines.length === 0) {
+                logger.warn('No YouTube cookies found, download may fail. Please add cookies to cookies.txt');
+            } else {
+                logger.info(`Using ${cookieLines.length} YouTube cookies for download`);
+            }
+
             const options = {
                 output: outputFilePath,
                 extractAudio: true,
                 audioFormat: 'mp3',
                 audioQuality: 6,
-                noWarnings: true,
                 noCallHome: true,
                 noCheckCertificate: true,
                 preferFreeFormats: true,
-                ffmpegLocation: getFfmpegPath()
+                ffmpegLocation: getFfmpegPath(),
+                cookies: cookiesPath,
+                verbose: true
             };
 
-            logger.info(`Downloading ${title} to ${outputFilePath}`);
+            logger.info(`Downloading ${title} to ${outputFilePath} with YouTube cookies`);
             await ytdl(url, options);
             logger.info(`Successfully downloaded ${title} to ${outputFilePath}`);
             return { url: outputFilePath }

@@ -14,7 +14,20 @@ const customFormat = winston.format.combine(
             delete meta.level;
             delete meta.message;
 
-            return `${base} | metadata: ${JSON.stringify(meta)}`;
+            // Handle circular references in metadata
+            const getCircularReplacer = () => {
+                const seen = new WeakSet();
+                return (key, value) => {
+                    if (typeof value === "object" && value !== null) {
+                        if (seen.has(value)) {
+                            return "[Circular]";
+                        }
+                        seen.add(value);
+                    }
+                    return value;
+                };
+            };
+            return `${base} | metadata: ${JSON.stringify(meta, getCircularReplacer())}`;
         }
 
         return base;
@@ -32,7 +45,20 @@ const consoleFormat = winston.format.combine(
             delete meta.timestamp;
             delete meta.level;
             delete meta.message;
-            return `${base} | metadata: ${JSON.stringify(meta, null, 2)}`;
+            // Handle circular references in metadata
+            const getCircularReplacer = () => {
+                const seen = new WeakSet();
+                return (key, value) => {
+                    if (typeof value === "object" && value !== null) {
+                        if (seen.has(value)) {
+                            return "[Circular]";
+                        }
+                        seen.add(value);
+                    }
+                    return value;
+                };
+            };
+            return `${base} | metadata: ${JSON.stringify(meta, getCircularReplacer(), 2)}`;
         }
 
         return base;

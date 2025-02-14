@@ -1,6 +1,7 @@
 import ytdl from 'youtube-dl-exec';
 import yts from 'yt-search'
 import logger from '../utils/logger.js';
+import { getCookiesPath } from '../utils/utils.js';
 
 class Yts {
     async getVideoDetail(name, artistName) {
@@ -32,11 +33,47 @@ class Yts {
 
     async validateVideo(url) {
         try {
+            // Check cookie expiration
+            const fs = (await import('fs')).default;
+            const cookiesPath = getCookiesPath();
+            
+            if (!fs.existsSync(cookiesPath)) {
+                throw new Error('cookies.txt file not found. Please create it in the config directory.');
+            }
+
+            const cookiesContent = fs.readFileSync(cookiesPath, 'utf8');
+            const cookieLines = cookiesContent.split('\n').filter(line => 
+                line.trim() && !line.startsWith('#') && line.includes('.youtube.com')
+            );
+
+            if (cookieLines.length === 0) {
+                throw new Error('No valid YouTube cookies found in cookies.txt');
+            }
+
+            // Check cookie expiration
+            const now = Math.floor(Date.now() / 1000);
+            for (const line of cookieLines) {
+                const parts = line.split('\t');
+                if (parts.length >= 5) {
+                    const expiryEpoch = parseInt(parts[4]);
+                    if (!isNaN(expiryEpoch)) {
+                        const daysUntilExpiry = Math.floor((expiryEpoch - now) / 86400);
+                        if (daysUntilExpiry <= 0) {
+                            throw new Error('YouTube cookies have expired. Please update cookies.txt with fresh cookies.');
+                        }
+                        if (daysUntilExpiry <= 7) {
+                            logger.warn(`Warning: YouTube cookies will expire in ${daysUntilExpiry} days. Please update them soon.`);
+                        }
+                    }
+                }
+            }
+
             const info = await ytdl(url, {
                 dumpSingleJson: true,
                 noWarnings: true,
                 noCallHome: true,
-                noCheckCertificate: true
+                noCheckCertificate: true,
+                cookies: cookiesPath
             });
 
             const duration = parseInt(info.duration);
@@ -58,7 +95,10 @@ class Yts {
             return { status: true, message: "Successfull" };
         } catch (error) {
             logger.error('Video validation error:', error);
-            return { status: false, message: "Video validation error: " }
+            return { 
+                status: false, 
+                message: `Video validation error: ${error.message}. Please ensure the cookies.txt file is properly configured in the config directory.`
+            }
         }
     }
     async getPlaylistDetail(listId) {

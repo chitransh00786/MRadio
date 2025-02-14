@@ -1,9 +1,11 @@
 import fsHelper from "./helper/fs-helper.js";
+import fs from 'fs';
 import { token_set_ratio } from 'fuzzball';
 import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION, DEFAULT_TRACKS_LOCATION } from "./constant.js";
 import logger from "./logger.js";
 import secret from "./secret.js";
 import ffmpegStatic from 'ffmpeg-static';
+import pathHelper from "./helper/path-helper.js";
 /**
  * ====================
  * Common Utils
@@ -25,7 +27,22 @@ function calculateSimilarity(str1, str2) {
     const similarity = token_set_ratio(str1, str2);
     return similarity;
 }
-
+export const getCookiesPath = () => {
+    logger.info("Fetching the cookies")
+    const cookiesPath = pathHelper.join('config', 'cookies.txt');
+    const isExist = fsHelper.exists(cookiesPath);
+    
+    if (!isExist) {
+        const directoryPath = pathHelper.getDir(cookiesPath);
+        if (!fsHelper.exists(directoryPath)) {
+            fsHelper.createDirectory(directoryPath);
+        }
+        fs.writeFileSync(cookiesPath, '');
+        logger.info('Created new empty cookies.txt file');
+    }
+    
+    return cookiesPath;
+}
 
 export const getQueueListJson = () => {
     return fsHelper.readFromJson(SONG_QUEUE_LOCATION, []);

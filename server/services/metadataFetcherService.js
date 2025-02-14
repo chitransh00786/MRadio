@@ -48,7 +48,7 @@ const searchJioSaavnSong = async (spotifyName) => {
  */
 export const searchYouTubeSong = async (spotifyName) => {
     try {
-        const yt = new YouTubeDownloader();
+        const yt = new Yts();
         const { url, title, duration } = await yt.getVideoDetail(spotifyName);
         const { status, message } = await yt.validateVideo(url);
 

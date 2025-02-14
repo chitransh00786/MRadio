@@ -95,7 +95,13 @@ export const fetchNextTrack = async () => {
         songQueue.removeFromFront();
         return { ...songResult, requestedBy: getFirst.requestedBy, duration: getFirst.duration };
     } catch (error) {
-        logger.error('Error fetching next track:', error);
+        // Extract relevant error information to avoid circular references
+        const errorInfo = {
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        };
+        logger.error('Error fetching next track:', errorInfo);
         songQueue.removeFromFront();
         throw error;
     }
