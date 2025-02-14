@@ -10,7 +10,6 @@ import logger from "../utils/logger.js";
 import { getFfmpegPath, durationFormatter } from "../utils/utils.js";
 import cacheManager from "./cacheManager.js";
 import { DEFAULT_QUEUE_SIZE, DEFAULT_TRACKS_LOCATION } from "../utils/constant.js";
-import { sendSSEData } from "./sseManager.js";
 import socketManager from "./socketManager.js";
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
@@ -391,8 +390,6 @@ class Queue {
                 duration: this.currentTrack.duration,
                 requestedBy: this.currentTrack.requestedBy
             }
-            sendSSEData(songData, 'newSong');
-            // Emit socket event for new song
             socketManager.emit('newSong', songData);
         } catch (error) {
             logger.error('Error during play:', { error });

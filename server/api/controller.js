@@ -1,17 +1,8 @@
 import { errorRes, successRes } from "../utils/response.js";
 import Service from "../services/apiService.js"
 import logger from "../utils/logger.js";
-import { initSSE } from '../lib/sseManager.js';
 
 const service = new Service();
-export const sseEndpoint = (req, res) => {
-    try {
-        initSSE(req, res);
-    } catch (error) {
-        logger.error("Error initializing SSE:", error);
-        res.status(500).json(errorRes({ message: error.message }, "SSE initialization failed"));
-    }
-};
 
 export const skip = async (req, res) => {
     try {
