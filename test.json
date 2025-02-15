@@ -68,7 +68,7 @@
         "originalName": "geçiyor zaman semicenk",
         "spotifyName": "Geçiyor Zaman Semicenk",
         "requestedBy": "Mity__"
-    }, 
+    },
     {
         "title": "İsmail YK - OHA (Official Video)",
         "url": "https://youtube.com/watch?v=3EYX-7d7qg0",
@@ -76,6 +76,15 @@
         "duration": "2:42",
         "originalName": "oha İsmail yk",
         "spotifyName": "OHA İsmail YK",
+        "requestedBy": "Mity__"
+    },
+    {
+        "title": "Kal Lütfen",
+        "url": "https://aac.saavncdn.com/563/a440a465a971519853f17c5f4bf32484_160.mp4",
+        "urlType": "jiosaavn",
+        "duration": "02:49",
+        "originalName": "Amo988 Kal Lütfen",
+        "spotifyName": "Kal Lütfen Amo988",
         "requestedBy": "Mity__"
     }
 ]

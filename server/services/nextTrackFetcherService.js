@@ -1,5 +1,5 @@
 import MyDownloader from "../lib/download.js";
-import JioSavan from "../lib/jiosavan.js";
+import JioSavan from "../lib/jiosaavn.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import cacheManager from "../lib/cacheManager.js";
 import logger from "../utils/logger.js";
@@ -27,7 +27,7 @@ const downloadFromYoutube = async (songData) => {
 }
 
 /**
- * @description Download song from jiosavan, just return the url.
+ * @description Download song from jiosaavn, just return the url.
  * @param {*} songData 
  * @returns 
  */
@@ -38,7 +38,7 @@ const downloadFromJioSavan = async (songData) => {
 }
 
 /**
- * @description Download song from jiosavan, just return the url.
+ * @description Download song from jiosaavn, just return the url.
  * @param {*} songData 
  * @returns 
  */
@@ -57,7 +57,7 @@ const fetchByUrlType = async (songData) => {
     switch (songData.urlType) {
         case 'youtube':
             return await downloadFromYoutube(songData);
-        case 'jiosavan':
+        case 'jiosaavn':
             return await downloadFromJioSavan(songData);
         case 'soundcloud':
             return await downloadFromSoundCloud(songData);

@@ -1,5 +1,4 @@
-import MyDownloader from "../lib/download.js";
-import JioSavan from "../lib/jiosavan.js";
+import JioSavan from "../lib/jiosaavn.js";
 import SoundCloud from "../lib/soundcloud.js";
 import SpotifyAPI from "../lib/spotify.js";
 import Yts from "../lib/yts.js";
