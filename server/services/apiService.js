@@ -65,8 +65,8 @@ class Service {
         return true;
     }
 
-    async addSongToQueue({ songName, requestedBy = "anonymous" }) {
-        const metadata = await generateSongMetadata(songName, requestedBy);
+    async addSongToQueue({ songName, requestedBy = "anonymous", force, preference }) {
+        const metadata = await generateSongMetadata(songName, requestedBy, force, preference);
         const isBlocked = await this.isSongBlocked(metadata.title);
         if (isBlocked) {
             throw new Error("Song is blocked! You cannot play this song.");

@@ -87,6 +87,10 @@ class SpotifyAPI {
         }
     }
 
+    async getsongsByPlaylist(playlistId) {
+
+    }
+
 }
 
 export default SpotifyAPI;

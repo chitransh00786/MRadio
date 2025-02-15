@@ -127,27 +127,63 @@ const updateMetadata = (metadata, type, title, url, duration) => {
  * @param {*} requestedBy 
  * @returns 
  */
-export const generateSongMetadata = async (songName, requestedBy) => {
+export const generateSongMetadata = async (songName, requestedBy, force = false, preference = null) => {
     try {
-        const spotifyResult = await searchSpotifySong(songName);
-        if (!spotifyResult) {
-            throw new Error("Could not find song on Spotify");
+        let searchName = songName;
+        
+        // If not forced, verify with Spotify first
+        if (!force) {
+            const spotifyResult = await searchSpotifySong(songName);
+            if (!spotifyResult) {
+                throw new Error("Could not find song on Spotify");
+            }
+            searchName = spotifyResult.name;
         }
-        const metadata = createMetadata(songName, spotifyResult.name, requestedBy);
 
-        const soundCloudResult = await searchSoundCloudSong(spotifyResult.name);
+        const metadata = createMetadata(songName, searchName, requestedBy);
+
+        // If force is true and preference is provided, search only on preferred platform
+        if (force && preference) {
+            switch (preference.toLowerCase()) {
+                case 'soundcloud': {
+                    const soundCloudResult = await searchSoundCloudSong(searchName);
+                    if (!soundCloudResult) throw new Error("Song not found on SoundCloud");
+                    return updateMetadata(metadata, "soundcloud", soundCloudResult.title, soundCloudResult.url, soundCloudResult.duration);
+                }
+                
+                case 'jiosaavn': {
+                    const jioSaavnResult = await searchJioSaavnSong(searchName);
+                    if (!jioSaavnResult) throw new Error("Song not found on JioSaavn");
+                    return updateMetadata(metadata, "jiosaavn", jioSaavnResult.title, jioSaavnResult.url, jioSaavnResult.duration);
+                }
+                
+                case 'youtube': {
+                    const youtubeResult = await searchYouTubeSong(searchName);
+                    if (!youtubeResult) throw new Error("Song not found on YouTube");
+                    return updateMetadata(metadata, "youtube", youtubeResult.title, youtubeResult.url, youtubeResult.duration);
+                }
+                
+                default:
+                    throw new Error("Invalid platform preference");
+            }
+        }
+
+        // If no preference or force without preference, try all platforms
+        const soundCloudResult = await searchSoundCloudSong(searchName);
         if (soundCloudResult) {
             return updateMetadata(metadata, "soundcloud", soundCloudResult.title, soundCloudResult.url, soundCloudResult.duration);
         }
-        const jioSaavnResult = await searchJioSaavnSong(spotifyResult.name);
+
+        const jioSaavnResult = await searchJioSaavnSong(searchName);
         if (jioSaavnResult) {
-            return updateMetadata(metadata, "jiosavan", jioSaavnResult.title, jioSaavnResult.url, jioSaavnResult.duration);
+            return updateMetadata(metadata, "jiosaavn", jioSaavnResult.title, jioSaavnResult.url, jioSaavnResult.duration);
         }
 
-        const youtubeResult = await searchYouTubeSong(spotifyResult.name);
+        const youtubeResult = await searchYouTubeSong(searchName);
         if (youtubeResult) {
             return updateMetadata(metadata, "youtube", youtubeResult.title, youtubeResult.url, youtubeResult.duration);
         }
+
         throw new Error("Song not found on any platform");
     } catch (error) {
         console.error("Error generating metadata:", error.message);

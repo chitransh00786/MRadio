@@ -147,10 +147,6 @@ export const removeLastSongRequestedByUser = async (req, res) => {
     }
 }
 
-export const addToQueueFromYT = async (req, res) => {
-    // TODO: Implement this function to add songs from YouTube to the queue
-}
-
 export const generateToken = async (req, res) => {
     try {
         if (!req.body.username) {
