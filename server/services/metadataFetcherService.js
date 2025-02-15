@@ -28,6 +28,7 @@ const searchSpotifySong = async (songName) => {
         return { name: `${name} ${artistName}`, id };
     } catch (error) {
         console.error("Spotify search error:", error.message);
+        return null;
     }
 };
 
@@ -186,8 +187,14 @@ export const generateSongMetadata = async (songName, requestedBy, force = false,
 
         throw new Error("Song not found on any platform");
     } catch (error) {
-        console.error("Error generating metadata:", error.message);
-        throw error;
+        console.error("Error generating metadata:", {
+            error: error.message,
+            songName,
+            requestedBy,
+            force,
+            preference
+        });
+        throw new Error(error.message || "Failed to generate song metadata");
     }
 };
 

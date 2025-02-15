@@ -39,19 +39,24 @@ class Queue {
 
         try {
             this.playing = false;
-            logger.info("Going to previous track:", this.previousTrack.title);
+            logger.info("Going to previous track:", this.previousTrack?.title || 'Unknown');
 
             await this.cleanupCurrentStream();
 
             // Check if the previous track is in cache
-            if (this.previousTrack.url.startsWith(`${DEFAULT_TRACKS_LOCATION}/`)) {
-                const cachedPath = cacheManager.getFromCache(this.previousTrack.title);
-                if (cachedPath) {
-                    this.previousTrack.url = cachedPath;
-                } else {
-                    logger.info(`Previous track ${this.previousTrack.title} not found in cache`);
-                    return;
+            if (this.previousTrack?.url) {
+                if (this.previousTrack.url.startsWith(`${DEFAULT_TRACKS_LOCATION}/`)) {
+                    const cachedPath = cacheManager.getFromCache(this.previousTrack?.title);
+                    if (cachedPath) {
+                        this.previousTrack.url = cachedPath;
+                    } else {
+                        logger.info(`Previous track ${this.previousTrack?.title || 'Unknown'} not found in cache`);
+                        return;
+                    }
                 }
+            } else {
+                logger.info("Previous track URL is missing");
+                return;
             }
 
             const temp = this.currentTrack;
@@ -127,7 +132,7 @@ class Queue {
         if (this.currentTrack) {
             const metadata = {
                 type: 'metadata',
-                track: this.currentTrack.url.split('/').pop(),
+                track: this.currentTrack?.url ? this.currentTrack.url.split('/').pop() : null,
                 index: this.index
             };
             client.write(JSON.stringify(metadata));
@@ -256,13 +261,13 @@ class Queue {
 
         const metadata = {
             type: 'metadata',
-            track: this.currentTrack.url.split('/').pop(),
-            title: this.currentTrack.title || '',
+            track: this.currentTrack?.url ? this.currentTrack.url.split('/').pop() : null,
+            title: this.currentTrack?.title || '',
             index: this.index
         };
         this.broadcast(Buffer.from(JSON.stringify(metadata)));
 
-        logger.info(`Now playing: ${this.currentTrack.title || 'Unknown'}`);
+        logger.info(`Now playing: ${this.currentTrack?.title || 'Unknown'}`);
         return this.currentTrack;
     }
 
@@ -386,9 +391,9 @@ class Queue {
             this.loadTrackStream();
             this.start();
             const songData = {
-                title: this.currentTrack.title,
-                duration: this.currentTrack.duration,
-                requestedBy: this.currentTrack.requestedBy
+                title: this.currentTrack?.title || 'Unknown',
+                duration: this.currentTrack?.duration || '00:00',
+                requestedBy: this.currentTrack?.requestedBy || 'anonymous'
             }
             socketManager.emit('newSong', songData);
         } catch (error) {
