@@ -24,7 +24,7 @@ class BaseQueueManager {
         try {
             return this.options.readFunction();
         } catch (error) {
-            logger.error("Error reading items:", { error });
+            logger.error("Error reading items:", { message: error.message, stack: error.stack });
             return [];
         }
     }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { JIO_SAAVN_SONG_SEARCH, JIO_SAAVN_TOP50 } from "../utils/constant.js";
+import { JIO_SAAVN_PLAYLIST_SEARCH, JIO_SAAVN_SONG_SEARCH, JIO_SAAVN_TOP50 } from "../utils/constant.js";
 import { createDownloadLinks } from "../utils/crypto.js";
 import { checkSimilarity, getRandomNumber } from "../utils/utils.js";
 import logger from "../utils/logger.js";
@@ -46,17 +46,30 @@ class JioSaavn {
             if(moreInfo.duration > 600){
                 throw new Error("Song Duration is more than 10 minutes.")
             }
-            const songLink = createDownloadLinks(moreInfo.encrypted_media_url);
             return {
                 title: results.title,
-                url: songLink[3].url,
-                quality: songLink[3].quality,
+                url: moreInfo.encrypted_media_url,
                 duration: moreInfo.duration
             }
         } catch (error) {
             logger.error(error);
             logger.error("Failed after retrying:", { error });
             return;
+        }
+    }
+
+    async getPlaylistDetail(playlistId) {
+        try {
+            const response = await axios.get(JIO_SAAVN_PLAYLIST_SEARCH(playlistId));
+            const { list } = response.data;
+            if(list.length <= 0){
+                throw new Error("Invalid Playlist ID");
+            }
+            return list;
+        } catch (error) {
+            logger.error(error);
+            logger.error("Error fetching Playlist");    
+            return null;
         }
     }
 }

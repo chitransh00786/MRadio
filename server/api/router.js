@@ -1,5 +1,5 @@
 import express from 'express';
-import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addSongToQueueFromSource } from './controller.js';
+import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addSongToQueueFromSource, addDefaultPlaylists } from './controller.js';
 import { isAdmin, isValidUser } from './middleware.js';
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router.delete("/songs/remove/:index", isValidUser, removeSongFromQueue);
 
 router.post("/playlist/add", isValidUser, express.json(), addPlaylistToQueue);
 router.post("/playlist/add/top", isValidUser, express.json(), addPlaylistToTop);
+router.post("/playlist/default", isValidUser, express.json(), addDefaultPlaylists);
 
 router.post("/songs/block/current", isValidUser, express.json(), blockCurrentSong);
 router.post("/songs/block", isValidUser, express.json(), blockSongBySongName);

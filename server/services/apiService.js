@@ -3,11 +3,13 @@ import { generate256BitToken } from "../utils/crypto.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import TokenManager from "../utils/queue/tokenManager.js";
 import BlockListManager from "../utils/queue/blockListManager.js";
-import { generatePlaylistMetadata, generateSongMetadata, searchYouTubeSong } from "./metadataFetcherService.js";
+import { generatePlaylistMetadata, generateSongMetadata} from "./metadataFetcherService.js";
 import { durationFormatter } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 import { DEFAULT_QUEUE_SIZE } from "../utils/constant.js";
 import Yts from "../lib/yts.js";
+import DefaultPlaylistMetadataManager from "../utils/queue/defaultPlaylistMetadataManager.js";
+import DefaultPlaylistManager from "../utils/queue/defaultPlaylistManager.js";
 
 class Service {
     constructor() {
@@ -145,9 +147,9 @@ class Service {
         const songDetail = await yts.getVideoDetailByUrl(videoId);
         const metadata = {
             requestedBy: requestedBy,
-            title: songDetail.title,
-            duration: songDetail.duration.timestamp,
-            url: songDetail.url,
+            title: songDetail?.title,
+            duration: songDetail?.duration.timestamp,
+            url: songDetail?.url,
             urlType: "youtube"
         };
         const songQueue = new SongQueueManager();
@@ -229,12 +231,44 @@ class Service {
 
     async isSongBlocked(songName) {
         try {
-            return await this.blockListManager.isSongBlocked(songName);
+            return this.blockListManager.isSongBlocked(songName);
         } catch (error) {
             logger.error("Error in isSongBlocked service:", { error });
             return false;
         }
     }
+
+    /**
+    * ==========================================
+    * Default Playlist Manager Service
+    * ==========================================
+    */
+    async addDefaultPlaylist({ playlistId, title, source, requestedBy = "auto" }) {
+        try {
+            const metadata = await generatePlaylistMetadata(playlistId, source, requestedBy)
+            if (metadata.length <= 0) {
+                throw new Error("No songs found in the playlist.");
+            }
+            const defaultPlaylistStore = new DefaultPlaylistManager();
+            defaultPlaylistStore.add({
+                playlistId,
+                title,
+                source,
+                metadataUpdatedAt: new Date(),
+                isActive: true,
+            })
+            const metadataStore = new DefaultPlaylistMetadataManager();
+            metadata.map(data => ({...data, playlistId: playlistId}));
+            metadataStore.addMany(metadata)
+            return { added: true, total: metadata.length }
+        } catch (error) {
+            logger.error("Error in addDefaultPlaylist service:", { error });
+            throw error;
+        }
+    };
+    async removeDefaultPlaylist() { };
+    async showDefaultPlaylist() { };
+    async updateDefaultPlaylist() {};
 }
 
 export default Service;

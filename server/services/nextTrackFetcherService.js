@@ -1,8 +1,10 @@
 import MyDownloader from "../lib/download.js";
-import JioSaavn from "../lib/jiosaavn.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import cacheManager from "../lib/cacheManager.js";
 import logger from "../utils/logger.js";
+import DefaultPlaylistManager from "../utils/queue/defaultPlaylistManager.js";
+import DefaultPlaylistMetadataManager from "../utils/queue/defaultPlaylistMetadataManager.js";
+import { getRandomNumber } from "../utils/utils.js";
 
 
 /**
@@ -10,9 +12,23 @@ import logger from "../utils/logger.js";
  * @returns 
  */
 const emptySongQueueHandler = async () => {
-    const jio = new JioSaavn();
-    const song = await jio.getRandomFromTop50();
-    return song;
+    const defaultPlaylistMetadata = new DefaultPlaylistMetadataManager();
+    const defaultPlaylistArr = defaultPlaylistMetadata.getAll();
+    if (!defaultPlaylistArr.length) {
+        throw new Error('No songs available in default playlist');
+    }
+    
+    // Get a random song from default playlist
+    return defaultPlaylistArr[getRandomNumber(0, defaultPlaylistArr.length - 1)];
+}
+
+const createTrackResponse = (song, cachedPath = null) => {
+    return {
+        url: cachedPath || song.url,
+        title: song.title,
+        duration: song.duration,
+        requestedBy: song.requestedBy
+    };
 }
 
 /**
@@ -33,7 +49,7 @@ const downloadFromYoutube = async (songData) => {
  */
 const downloadFromJioSaavn = async (songData) => {
     const yt = new MyDownloader();
-    const { url } = await yt.downloadFromUrl(songData.url, songData.title);
+    const { url } = await yt.downloadJioSaavn(songData.url, songData.title);
     return { url: url, title: songData.title };
 }
 
@@ -69,54 +85,50 @@ const fetchByUrlType = async (songData) => {
  * @returns 
  */
 export const fetchNextTrack = async () => {
-    // Fetch queue list from json.
     const songQueue = new SongQueueManager();
-    try {
-        let songResult;
-        const getFirst = songQueue.getFirstFromQueue();
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
 
-        if (!getFirst) {
-            songResult = await emptySongQueueHandler();
-            const cachedPath = cacheManager.getFromCache(songResult.title);
+    const tryFetchTrack = async () => {
+        try {
+            const currentTrack = songQueue.getFirstFromQueue();
+            let songResult;
+
+            const trackToProcess = currentTrack ?? await emptySongQueueHandler();
+            
+            const cachedPath = cacheManager.getFromCache(trackToProcess.title);
             if (cachedPath) {
-                logger.info(`Using cached version of: ${songResult.title}`);
-                return {
-                    url: cachedPath,
-                    title: songResult.title,
-                    duration: songResult.duration,
-                    requestedBy: songResult.requestedBy
-                };
+                logger.info(`Using cached version of: ${trackToProcess.title}`);
+                if (currentTrack) songQueue.removeFromFront();
+                return createTrackResponse(trackToProcess, cachedPath);
             }
-            return songResult;
-        }
+            
+            songResult = await fetchByUrlType(trackToProcess);
+            if (currentTrack) songQueue.removeFromFront();
+            return createTrackResponse({
+                ...songResult,
+                requestedBy: trackToProcess.requestedBy,
+                duration: trackToProcess.duration
+            });
 
-        // Check if song exists in cache first
-        const cachedPath = cacheManager.getFromCache(getFirst.title);
-        if (cachedPath) {
-            logger.info(`Using cached version of: ${getFirst.title}`);
-            songQueue.removeFromFront();
-            return {
-                url: cachedPath,
-                title: getFirst.title,
-                duration: getFirst.duration,
-                requestedBy: getFirst.requestedBy
+        } catch (error) {
+            const errorInfo = {
+                message: error.message,
+                code: error.code,
+                retry: retryCount + 1
             };
+            logger.error('Error fetching track:', errorInfo);
+            
+            songQueue.removeFromFront();
+            retryCount++;
+            
+            if (retryCount >= MAX_RETRIES) {
+                throw new Error(`Failed to fetch track after ${MAX_RETRIES} attempts`);
+            }
+            
+            return tryFetchTrack();
         }
+    };
 
-        // If not in cache, fetch next track from given URL type
-        songResult = await fetchByUrlType(getFirst);
-        songQueue.removeFromFront();
-        return { ...songResult, requestedBy: getFirst.requestedBy, duration: getFirst.duration };
-    } catch (error) {
-        const errorInfo = {
-            message: error.message,
-            code: error.code
-        };
-        logger.error('Error fetching next track:', errorInfo);
-        
-        // Remove the problematic track from queue
-        logger.error("Deleting the error song and fetching again next track");
-        songQueue.removeFromFront();
-        return fetchNextTrack();
-    }
+    return tryFetchTrack();
 }

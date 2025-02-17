@@ -10,6 +10,7 @@ import cacheManager from './cacheManager.js';
 import fsHelper from '../utils/helper/fs-helper.js';
 import { DEFAULT_TRACKS_LOCATION } from '../utils/constant.js';
 import SoundCloud from './soundcloud.js';
+import { createDownloadLinks } from '../utils/crypto.js';
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 class MyDownloader {
@@ -173,6 +174,11 @@ class MyDownloader {
     async downloadSoundCloud(url, title){
         const download = new SoundCloud();
         const streamUrl = await download.fetchStreamUrl(url);
+        return await this.downloadFromUrl(streamUrl, title)
+    }
+
+    async downloadJioSaavn(url, title){
+        const streamUrl = createDownloadLinks(url)[3].url;
         return await this.downloadFromUrl(streamUrl, title)
     }
 }

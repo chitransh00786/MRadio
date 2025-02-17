@@ -236,3 +236,16 @@ export const isSongBlocked = async (req, res) => {
         res.status(400).json(errorRes({ message: error.message }, "Error checking song block status"));
     }
 };
+
+export const addDefaultPlaylists = async (req, res) => {
+    try {
+        if (!req.body.playlistId || !req.body.title || !req.body.source) {
+            throw new Error("Invalid one of [playlist Id, title, source]");
+        }
+        const response = await service.addDefaultPlaylist(req.body);
+        res.status(200).json(successRes(response, `Successfully Added ${response.total} more songs to the Default Playlist`));
+    } catch (error) {
+        logger.error("Error in Adding Song to Queue API", { error });
+        res.status(400).json(errorRes({ message: error.message }, "Something went wrong while adding playlist"))
+    }
+}

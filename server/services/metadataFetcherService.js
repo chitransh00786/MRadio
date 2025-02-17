@@ -212,6 +212,21 @@ export const searchYoutubePlaylist = async (playlistId, requestedBy) => {
     return playListMetadata;
 }
 
+export const searchJioSaavnPlaylist = async (playlistId, requestedBy) => {
+    const jio = new JioSaavn();
+    const playlistArray = await jio.getPlaylistDetail(playlistId);
+    const playlistMetadata = playlistArray
+        .filter((audio) => audio.more_info.duration <= 900)
+        .map((audio) => ({
+            title: audio.title,
+            duration: durationFormatter(audio.more_info.duration),
+            requestedBy: requestedBy,
+            url: audio.more_info.encrypted_media_url,
+            urlType: "jiosaavn"
+        }));
+    return playlistMetadata;
+}
+
 /**
  * @description Main function to generate playlist metadata
  * @param {*} playlistId 
@@ -222,8 +237,11 @@ export const generatePlaylistMetadata = async (playlistId, sourceName, requested
     if (!sourceName || !playlistId) {
         throw new Error("Invalid playlist parameters");
     }
-    if (sourceName === "youtube") {
-        return await searchYoutubePlaylist(playlistId, requestedBy);
+    switch (sourceName) {
+        case "youtube":
+            return await searchYoutubePlaylist(playlistId, requestedBy);
+        case "jiosaavn":
+            return await searchJioSaavnPlaylist(playlistId, requestedBy);
     }
     throw new Error("Unsupported playlist source");
 }
