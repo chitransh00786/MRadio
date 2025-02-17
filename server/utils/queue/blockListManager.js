@@ -1,17 +1,20 @@
-import logger from "../logger.js";
 import { getBlockListJson, saveBlockListJson, checkSimilarity } from "../utils.js";
+import BaseQueueManager from "./baseQueueManager.js";
+import logger from "../logger.js";
 
-class BlockListManager {
+class BlockListManager extends BaseQueueManager {
     constructor() {
-        this.blockList = this.#readBlockList() || [];
-    }
-
-    #readBlockList() {
-        return getBlockListJson();
-    }
-
-    #saveBlockList() {
-        saveBlockListJson(this.blockList);
+        super({
+            readFunction: getBlockListJson,
+            saveFunction: saveBlockListJson,
+            validateFunction: (item) => {
+                return typeof item === "object" && item.songName;
+            },
+            formatFunction: (item) => ({
+                ...item,
+                blockedAt: item.blockedAt || new Date().toISOString()
+            })
+        });
     }
 
     #isSimilarSong(songName1, songName2) {
@@ -25,19 +28,18 @@ class BlockListManager {
                 throw new Error("Song name is required");
             }
 
+            if (this.isSongBlocked(songName)) {
+                logger.warn(`Song already blocked: ${songName}`);
+                return "Song is already in block list.";
+            }
+
             const blockItem = {
                 songName,
                 requestedBy,
                 blockedAt: new Date().toISOString()
             };
 
-            if (this.blockList.some(item => this.#isSimilarSong(item.songName, songName))) {
-                logger.warn(`Song already blocked: ${songName}`);
-                return "Song is already in block list.";
-            }
-
-            this.blockList.push(blockItem);
-            this.#saveBlockList();
+            this.add(blockItem);
             logger.info(`Blocked song: ${songName}`);
             return "Blocked the current song.";
         } catch (error) {
@@ -65,14 +67,13 @@ class BlockListManager {
                 throw new Error("Song name is required");
             }
 
-            const index = this.blockList.findIndex(item => this.#isSimilarSong(item.songName, songName));
+            const index = this.items.findIndex(item => this.#isSimilarSong(item.songName, songName));
             if (index === -1) {
                 logger.warn(`Song not found in block list: ${songName}`);
                 throw new Error("Song not found in block list");
             }
 
-            this.blockList.splice(index, 1);
-            this.#saveBlockList();
+            this.removeAtIndex(index + 1); // +1 because removeAtIndex expects 1-based index
             logger.info(`Unblocked song: ${songName}`);
             return "Unblock Successful";
         } catch (error) {
@@ -83,17 +84,12 @@ class BlockListManager {
 
     async unblockSongByIndex(index) {
         try {
-            // Convert to 0-based index
-            const actualIndex = index - 1;
-
-            if (actualIndex < 0 || actualIndex >= this.blockList.length) {
-                throw new Error("Invalid index");
+            const result = this.removeAtIndex(index);
+            if (result) {
+                logger.info(`Unblocked song at index ${index}: ${result.songName}`);
+                return "Unblock Successful.";
             }
-
-            const removedSong = this.blockList.splice(actualIndex, 1)[0];
-            this.#saveBlockList();
-            logger.info(`Unblocked song at index ${index}: ${removedSong.songName}`);
-            return "Unblock Successful.";
+            throw new Error("Invalid index");
         } catch (error) {
             logger.error("Error unblocking song by index:", {error});
             throw error;
@@ -102,8 +98,7 @@ class BlockListManager {
 
     async clearBlockList() {
         try {
-            this.blockList = [];
-            this.#saveBlockList();
+            this.clear();
             logger.info("Cleared block list");
             return "Cleared the block list.";
         } catch (error) {
@@ -114,7 +109,7 @@ class BlockListManager {
 
     async getAllBlockList() {
         try {
-            return this.blockList;
+            return this.getAll();
         } catch (error) {
             logger.error("Error getting block list:", {error});
             throw error;
@@ -122,7 +117,7 @@ class BlockListManager {
     }
 
     isSongBlocked(songName) {
-        return this.blockList.some(item => this.#isSimilarSong(item.songName, songName));
+        return this.items.some(item => this.#isSimilarSong(item.songName, songName));
     }
 }
 

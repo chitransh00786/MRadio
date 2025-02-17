@@ -71,6 +71,20 @@ export const getSpotifyConfigJson = () => {
     return fsHelper.readFromJson(SPOTIFY_TOKEN_LOCATION, {});
 }
 
+export const getDefaulPlaylistJson = () => {
+    return fsHelper.readFromJson(DEFAULT_PLAYLIST_LOCATION, []);
+}
+export const saveDefaultPlayistJson = (data) => {
+    return fsHelper.writeToJson(DEFAULT_PLAYLIST_LOCATION, data);
+}
+
+export const getDefaultPlaylistMetadataJson = () => {
+    return fsHelper.readFromJson(DEFAULT_PLAYLIST_METADATA_LOCATION, []);
+}
+export const saveDefaultPlaylistMetadataJson = (data) => {
+    return fsHelper.writeToJson(DEFAULT_PLAYLIST_METADATA_LOCATION, data);
+}
+
 export const getRandomNumber = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }

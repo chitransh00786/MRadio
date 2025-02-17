@@ -1,17 +1,17 @@
-import { getQueueListJson, saveQueueListJson, durationFormatter } from "../utils.js";
+import { durationFormatter, getDefaultPlaylistMetadataJson, saveDefaultPlaylistMetadataJson } from "../utils.js";
 import BaseQueueManager from "./baseQueueManager.js";
 
-class SongQueueManager extends BaseQueueManager {
+class DefaultPlaylistMetadataManager extends BaseQueueManager {
     constructor() {
         super({
             readFunction: () => {
-                const queue = getQueueListJson();
+                const queue = getDefaultPlaylistMetadataJson();
                 return queue.map(item => ({
                     ...item,
                     duration: item.duration ? durationFormatter(item.duration) : "00:00"
                 }));
             },
-            saveFunction: (items) => saveQueueListJson(items),
+            saveFunction: (items) => saveDefaultPlaylistMetadataJson(items),
             validateFunction: (item) => {
                 return typeof item === "object" && item.title && item.url;
             },
@@ -47,16 +47,6 @@ class SongQueueManager extends BaseQueueManager {
     addManyToTop(items) {
         return this.addMany(items, true);
     }
-
-    // Additional song-specific methods can be added here
-    removeLastSongRequestedByUser(requestedBy) {
-        const index = [...this.items].reverse().findIndex(item => item.requestedBy === requestedBy);
-        if (index !== -1) {
-            const actualIndex = this.items.length - 1 - index;
-            return this.removeAtIndex(actualIndex + 1); // +1 because removeAtIndex expects 1-based index
-        }
-        return null;
-    }
 }
 
-export default SongQueueManager;
+export default DefaultPlaylistMetadataManager;
