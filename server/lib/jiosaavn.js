@@ -1,14 +1,14 @@
 import axios from "axios";
-import { JIO_SAVAN_SONG_SEARCH, JIO_SAVAN_TOP50 } from "../utils/constant.js";
+import { JIO_SAAVN_SONG_SEARCH, JIO_SAAVN_TOP50 } from "../utils/constant.js";
 import { createDownloadLinks } from "../utils/crypto.js";
 import { checkSimilarity, getRandomNumber } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 import MyDownloader from "./download.js";
 
-class JioSavan {
+class JioSaavn {
     async getRandomFromTop50(retryCount = 1) {
         try {
-            const response = await axios.get(JIO_SAVAN_TOP50);
+            const response = await axios.get(JIO_SAAVN_TOP50);
             const { list_count, list } = response.data;
             const songData = list[getRandomNumber(0, list_count - 1)];
 
@@ -38,7 +38,7 @@ class JioSavan {
     }
     async getSongBySongName(songName, retryCount = 1) {
         try {
-            const response = await axios.get(JIO_SAVAN_SONG_SEARCH(songName));
+            const response = await axios.get(JIO_SAAVN_SONG_SEARCH(songName));
             const results = response.data.results.find(track => checkSimilarity(songName, track.title) > 60);
             if (!results) return;
             const moreInfo = results.more_info;
@@ -61,4 +61,4 @@ class JioSavan {
     }
 }
 
-export default JioSavan;
+export default JioSaavn;

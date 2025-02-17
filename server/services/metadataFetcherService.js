@@ -1,4 +1,4 @@
-import JioSavan from "../lib/jiosaavn.js";
+import JioSaavn from "../lib/jiosaavn.js";
 import SoundCloud from "../lib/soundcloud.js";
 import SpotifyAPI from "../lib/spotify.js";
 import Yts from "../lib/yts.js";
@@ -32,13 +32,13 @@ const searchSpotifySong = async (songName) => {
 };
 
 /**
- * @description Search song on JioSavan
+ * @description Search song on JioSaavn
  * @param {*} spotifyName 
  * @returns 
  */
 const searchJioSaavnSong = async (spotifyName) => {
     try {
-        const jio = new JioSavan();
+        const jio = new JioSaavn();
         const song = await jio.getSongBySongName(spotifyName);
         return song;
     } catch (error) {
@@ -48,7 +48,7 @@ const searchJioSaavnSong = async (spotifyName) => {
 };
 
 /**
- * @description Search song on JioSavan
+ * @description Search song on JioSaavn
  * @param {*} spotifyName 
  * @returns 
  */
