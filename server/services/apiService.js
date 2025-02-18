@@ -300,6 +300,41 @@ class Service {
         const defaultPlaylistStore = new DefaultPlaylistManager();
         return defaultPlaylistStore.getAll();
     };
+
+    async updatePlaylistStatus({ index, isActive }) {
+        const defaultPlaylistStore = new DefaultPlaylistManager();
+        const allPlaylists = defaultPlaylistStore.getAll();
+        
+        // Convert to 0-based index
+        const actualIndex = index - 1;
+        
+        if (actualIndex < 0 || actualIndex >= allPlaylists.length) {
+            throw new Error("Invalid playlist index");
+        }
+
+        // Check if setting this playlist to inactive would leave no active playlists
+        if (!isActive) {
+            const activePlaylistCount = allPlaylists.filter((playlist, idx) => 
+                idx !== actualIndex && playlist.isActive
+            ).length;
+            
+            if (activePlaylistCount === 0) {
+                throw new Error("Cannot deactivate playlist: At least one playlist must remain active");
+            }
+        }
+
+        // Create updated playlist object
+        const updatedPlaylist = {
+            ...allPlaylists[actualIndex],
+            isActive: isActive
+        };
+
+        // Remove old playlist and add updated one
+        defaultPlaylistStore.removeAtIndex(index);
+        defaultPlaylistStore.add(updatedPlaylist);
+
+        return updatedPlaylist;
+    }
 }
 
 export default Service;

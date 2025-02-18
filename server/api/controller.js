@@ -295,3 +295,19 @@ export const createConfigOrUpdateCommonConfig = async (req, res) => {
         res.status(400).json(errorRes({ message: error.message }, "Error creating or updating common config"));
     }
 }
+
+export const updatePlaylistStatus = async (req, res) => {
+    try {
+        if (!req.params.index || req.body.isActive === undefined) {
+            throw new Error("Index and isActive status are required");
+        }
+        const response = await service.updatePlaylistStatus({
+            index: parseInt(req.params.index),
+            isActive: req.body.isActive
+        });
+        res.status(200).json(successRes(response, "Successfully updated playlist status"));
+    } catch (error) {
+        logger.error("Error in Updating Playlist Status API", { error });
+        res.status(400).json(errorRes({ message: error.message }, "Error updating playlist status"));
+    }
+}
