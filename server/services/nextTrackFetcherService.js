@@ -42,7 +42,7 @@ const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
 const emptySongQueueHandler = async () => {
     try {
         const defaultPlaylistMetadata = new DefaultPlaylistMetadataManager();
-        const defaultPlaylistArr = defaultPlaylistMetadata.getAll();
+        const defaultPlaylistArr = defaultPlaylistMetadata.getAll({ isActive: true });
         if (!defaultPlaylistArr.length) {
             return getFallbackTrack();
         }

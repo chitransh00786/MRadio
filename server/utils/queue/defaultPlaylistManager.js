@@ -1,11 +1,11 @@
-import { getDefaulPlaylistJson, saveDefaultPlayistJson } from "../utils.js";
+import { getDefaultPlaylistJson, saveDefaultPlaylistJson } from "../utils.js";
 import BaseQueueManager from "./baseQueueManager.js";
 
 class DefaultPlaylistManager extends BaseQueueManager {
     constructor() {
         super({
-            readFunction: getDefaulPlaylistJson,
-            saveFunction: saveDefaultPlayistJson,
+            readFunction: getDefaultPlaylistJson,
+            saveFunction: saveDefaultPlaylistJson,
             validateFunction: (item) => {
                 return typeof item === "object" && item.title && item.playlistId && item.source;
             },

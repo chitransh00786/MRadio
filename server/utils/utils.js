@@ -73,10 +73,10 @@ export const getSpotifyConfigJson = () => {
     return fsHelper.readFromJson(SPOTIFY_TOKEN_LOCATION, {});
 }
 
-export const getDefaulPlaylistJson = () => {
+export const getDefaultPlaylistJson = () => {
     return fsHelper.readFromJson(DEFAULT_PLAYLIST_LOCATION, []);
 }
-export const saveDefaultPlayistJson = (data) => {
+export const saveDefaultPlaylistJson = (data) => {
     return fsHelper.writeToJson(DEFAULT_PLAYLIST_LOCATION, data);
 }
 
