@@ -42,10 +42,11 @@ const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
 const emptySongQueueHandler = async () => {
     try {
         const defaultPlaylistMetadata = new DefaultPlaylistMetadataManager();
-        const genre = commonConfigService.get(COMMON_CONFIG_KEYS.defaultPlaylistGenre) ?? null;
+        const genre = await commonConfigService.get(COMMON_CONFIG_KEYS.defaultPlaylistGenre);
+
         const filter = {
             isActive: true,
-            genre: genre === "all" ? null : genre
+            genre: genre === "all" ? undefined : genre,
         }
         const defaultPlaylistArr = defaultPlaylistMetadata.getAll(filter);
         if (!defaultPlaylistArr.length) {

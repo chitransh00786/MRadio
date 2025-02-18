@@ -16,7 +16,6 @@ export const COMMON_CONFIG_LOCATION = "data/commonConfig.json";
 
 export const COMMON_CONFIG_KEYS = {
     defaultPlaylistGenre: "defaultPlaylistGenre", // string
-    defaultPlaylistSource: "defaultPlaylistSource", // string
 };
 
 export const STREAM_MEDIA_TYPE = {

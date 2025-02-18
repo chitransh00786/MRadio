@@ -1,4 +1,4 @@
-import { getCommonConfigJson, saveCommonConfigJson } from "../utils/utils.js";
+import { getCommonConfigJson, saveCommonConfigJson, getDefaultPlaylistJson } from "../utils/utils.js";
 import { COMMON_CONFIG_KEYS } from "../utils/constant.js";
 import logger from "../utils/logger.js";
 
@@ -6,8 +6,23 @@ class CommonConfigService {
     constructor() {
         this.config = getCommonConfigJson();
         this.allowedKeys = Object.values(COMMON_CONFIG_KEYS);
+        this.validations = this.setupValidations();
     }
 
+    setupValidations() {
+        const validatePlaylistValue = (value) => value === "all";
+        return {
+            [COMMON_CONFIG_KEYS.defaultPlaylistGenre]: {
+                validate: async (value) => {
+                    if (validatePlaylistValue(value)) return true;
+                    
+                    const playlists = getDefaultPlaylistJson();
+                    return new Set(playlists.map(p => p.genre)).has(value);
+                },
+                errorMessage: (value) => `Genre '${value}' does not exist in default playlists`
+            },
+        };
+    }
     /**
      * Validate if a key is allowed
      * @param {string} key - The key to validate
@@ -22,9 +37,18 @@ class CommonConfigService {
      * @param {string} key - The key to validate
      * @throws {Error} If key is not allowed
      */
-    validateKey(key) {
+    async validateKeyAndValue(key, value) {
         if (!this.isValidKey(key)) {
             throw new Error(`Invalid config key: ${key}. Allowed keys are: ${this.allowedKeys.join(', ')}`);
+        }
+
+        // If there's a validation rule for this key, run it
+        if (this.validations[key]) {
+            const validation = this.validations[key];
+            const isValid = await validation.validate(value);
+            if (!isValid) {
+                throw new Error(validation.errorMessage(value));
+            }
         }
     }
 
@@ -41,12 +65,7 @@ class CommonConfigService {
      * @param {string} key - The key to retrieve
      * @returns {any} The value associated with the key, or undefined if not found
      */
-    get(key) {
-        this.validateKey(key);
-        if (!(key in this.config)) {
-            this.config[key] = null;
-            saveCommonConfigJson(this.config);
-        }
+    async get(key) {
         return this.config[key];
     }
 
@@ -57,9 +76,9 @@ class CommonConfigService {
      * @param {boolean} [partial=false] - If true and both old and new values are objects, performs a partial update
      * @returns {boolean} True if update was successful, false otherwise
      */
-    update(key, value, partial = false) {
-        this.validateKey(key);
+    async update(key, value, partial = false) {
         try {
+            await this.validateKeyAndValue(key, value);
             if (partial && typeof this.config[key] === 'object' && typeof value === 'object') {
                 this.config[key] = {
                     ...this.config[key],
@@ -73,7 +92,7 @@ class CommonConfigService {
             return true;
         } catch (error) {
             logger.error('Error updating config:', error);
-            return false;
+            throw error;
         }
     }
 
@@ -83,10 +102,17 @@ class CommonConfigService {
      * @param {boolean} [partial=false] - If true, performs partial updates for object values
      * @returns {boolean} True if all updates were successful, false otherwise
      */
-    updateMultiple(updates, partial = false) {
+    async updateMultiple(updates, partial = false) {
         try {
+            // Validate all updates first
+            await Promise.all(
+                Object.entries(updates).map(([key, value]) =>
+                    this.validateKeyAndValue(key, value)
+                )
+            );
+
+            // If all validations pass, apply the updates
             Object.entries(updates).forEach(([key, value]) => {
-                this.validateKey(key);
                 if (partial && typeof this.config[key] === 'object' && typeof value === 'object') {
                     this.config[key] = {
                         ...this.config[key],
@@ -110,9 +136,11 @@ class CommonConfigService {
      * @param {string} key - The key to delete
      * @returns {boolean} True if deletion was successful, false otherwise
      */
-    delete(key) {
+    async delete(key) {
         try {
-            this.validateKey(key);
+            if (!this.isValidKey(key)) {
+                throw new Error(`Invalid config key: ${key}. Allowed keys are: ${this.allowedKeys.join(', ')}`);
+            }
             delete this.config[key];
             saveCommonConfigJson(this.config);
             return true;

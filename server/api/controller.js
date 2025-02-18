@@ -253,7 +253,7 @@ export const addDefaultPlaylists = async (req, res) => {
 
 export const getCommonConfig = async (req, res) => {
     try {
-        const response = commonConfigService.get(req.query.key);
+        const response = await commonConfigService.get(req.query.key);
         res.status(200).json(successRes(response, "Successfully fetched common config"));
     } catch (error) {
         res.status(400).json(errorRes({ message: error.message }, "Error fetching common config"));
@@ -266,8 +266,7 @@ export const createConfigOrUpdateCommonConfig = async (req, res) => {
             throw new Error("Invalid config");
         }
         const isPartial = req.query.partial;
-        console.log("comign here", req.body.key, req.body.value)
-        const response = commonConfigService.update(req.body.key, req.body.value, isPartial);
+        const response = await commonConfigService.update(req.body.key, req.body.value, isPartial);
         res.status(200).json(successRes(response, "Successfully Excecuted."));
     } catch (error) {
         res.status(400).json(errorRes({ message: error.message }, "Error creating or updating common config"));
