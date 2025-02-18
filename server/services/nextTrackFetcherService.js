@@ -5,9 +5,9 @@ import logger from "../utils/logger.js";
 import DefaultPlaylistManager from "../utils/queue/defaultPlaylistManager.js";
 import DefaultPlaylistMetadataManager from "../utils/queue/defaultPlaylistMetadataManager.js";
 import { getRandomNumber } from "../utils/utils.js";
-import { readdir } from "fs/promises";
 import { extname, join } from "path";
 import { DEFAULT_FALLBACK_LOCATION } from "../utils/constant.js";
+import fsHelper from "../utils/helper/fs-helper.js";
 
 
 /**
@@ -16,11 +16,12 @@ import { DEFAULT_FALLBACK_LOCATION } from "../utils/constant.js";
  */
 const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
     try {
-        const files = await readdir(dir);
+        // This will create directory if it doesn't exist
+        const files = fsHelper.listFiles(dir);
         const musicFiles = files.filter(file => extname(file) === '.mp3');
         
         if (musicFiles.length === 0) {
-            throw new Error('No fallback tracks available');
+            throw new Error(`No fallback tracks available in directory: ${dir}`);
         }
         
         const randomTrack = musicFiles[getRandomNumber(0, musicFiles.length - 1)];
