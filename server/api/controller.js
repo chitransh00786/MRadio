@@ -251,6 +251,29 @@ export const addDefaultPlaylists = async (req, res) => {
     }
 }
 
+export const removeDefaultPlaylist = async (req, res) => {
+    try {
+        if (!req.params.index) {
+            throw new Error("index is required");
+        }
+        const response = await service.removeDefaultPlaylist(req.params);
+        res.status(200).json(successRes(response, "Successfully removed Default Playlist"));
+    } catch (error) {
+        logger.error("Error in Removing Default Playlist API", { error });
+        res.status(400).json(errorRes({ message: error.message }, "Something went wrong while removing playlist"))
+    }
+}
+
+export const getDefaultPlaylist = async (req, res) => {
+    try {
+        const response = await service.getDefaultPlaylist();
+        res.status(200).json(successRes(response, "Successfully fetched Default Playlist"));
+    } catch (error) {
+        logger.error("Error in Fetching Default Playlist API", { error });
+        res.status(400).json(errorRes({ message: error.message }, "Something went wrong while fetching playlist"))
+    }
+}
+
 export const getCommonConfig = async (req, res) => {
     try {
         const response = await commonConfigService.get(req.query.key);

@@ -3,7 +3,7 @@ import { generate256BitToken } from "../utils/crypto.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import TokenManager from "../utils/queue/tokenManager.js";
 import BlockListManager from "../utils/queue/blockListManager.js";
-import { generatePlaylistMetadata, generateSongMetadata} from "./metadataFetcherService.js";
+import { generatePlaylistMetadata, generateSongMetadata } from "./metadataFetcherService.js";
 import { durationFormatter } from "../utils/utils.js";
 import logger from "../utils/logger.js";
 import { DEFAULT_QUEUE_SIZE } from "../utils/constant.js";
@@ -259,7 +259,7 @@ class Service {
                 genre: genre
             })
             const metadataStore = new DefaultPlaylistMetadataManager();
-            const updatedMetadata = metadata.map(data => ({...data, playlistId: playlistId}));
+            const updatedMetadata = metadata.map(data => ({ ...data, playlistId: playlistId }));
             metadataStore.addMany(updatedMetadata);
             return { added: true, total: metadata.length }
         } catch (error) {
@@ -267,10 +267,39 @@ class Service {
             throw error;
         }
     };
-    
-    async removeDefaultPlaylist() { };
-    async showDefaultPlaylist() { };
-    async updateDefaultPlaylist() {};
+
+    async removeDefaultPlaylist({ index }) {
+        const defaultPlaylistStore = new DefaultPlaylistManager();
+        const defaultPlaylistMetadataStore = new DefaultPlaylistMetadataManager();
+        
+        const len = defaultPlaylistStore.getLength();
+        if (len <= 1) {
+            throw new Error("Cannot remove default playlist. There should be at least one playlist.");
+        }
+        
+        const removedPlaylist = defaultPlaylistStore.removeAtIndex(index);
+        if (!removedPlaylist) {
+            throw new Error("Failed to remove playlist");
+        }
+
+        const allMetadataEntries = defaultPlaylistMetadataStore.getAll();
+        
+        const indexesToRemove = allMetadataEntries
+            .map((entry, idx) => entry.playlistId === removedPlaylist.playlistId ? idx + 1 : null)
+            .filter(idx => idx !== null)
+            .sort((a, b) => b - a);
+        
+        for (const idx of indexesToRemove) {
+            defaultPlaylistMetadataStore.removeAtIndex(idx);
+        }
+
+        return removedPlaylist;
+    };
+
+    async getDefaultPlaylist() {
+        const defaultPlaylistStore = new DefaultPlaylistManager();
+        return defaultPlaylistStore.getAll();
+    };
 }
 
 export default Service;
