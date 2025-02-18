@@ -1,6 +1,7 @@
 import { errorRes, successRes } from "../utils/response.js";
 import Service from "../services/apiService.js"
 import logger from "../utils/logger.js";
+import commonConfigService from "../services/commonConfigService.js";
 
 const service = new Service();
 
@@ -247,5 +248,28 @@ export const addDefaultPlaylists = async (req, res) => {
     } catch (error) {
         logger.error("Error in Adding Song to Queue API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Something went wrong while adding playlist"))
+    }
+}
+
+export const getCommonConfig = async (req, res) => {
+    try {
+        const response = commonConfigService.get(req.query.key);
+        res.status(200).json(successRes(response, "Successfully fetched common config"));
+    } catch (error) {
+        res.status(400).json(errorRes({ message: error.message }, "Error fetching common config"));
+    }
+};
+
+export const createConfigOrUpdateCommonConfig = async (req, res) => {
+    try {
+        if (!req.body?.key || !req.body?.value) {
+            throw new Error("Invalid config");
+        }
+        const isPartial = req.query.partial;
+        console.log("comign here", req.body.key, req.body.value)
+        const response = commonConfigService.update(req.body.key, req.body.value, isPartial);
+        res.status(200).json(successRes(response, "Successfully Excecuted."));
+    } catch (error) {
+        res.status(400).json(errorRes({ message: error.message }, "Error creating or updating common config"));
     }
 }

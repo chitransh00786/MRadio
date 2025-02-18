@@ -1,5 +1,5 @@
 import express from 'express';
-import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addSongToQueueFromSource, addDefaultPlaylists } from './controller.js';
+import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addSongToQueueFromSource, addDefaultPlaylists, getCommonConfig, createConfigOrUpdateCommonConfig } from './controller.js';
 import { isAdmin, isValidUser } from './middleware.js';
 const router = express.Router();
 
@@ -29,4 +29,6 @@ router.get("/songs/block/check", isValidUser, isSongBlocked);
 
 router.post("/admin/token", express.json(), isAdmin, generateToken);
 
+router.get("/config", isValidUser, getCommonConfig);
+router.post("/config", isValidUser, express.json(), createConfigOrUpdateCommonConfig);
 export default router;

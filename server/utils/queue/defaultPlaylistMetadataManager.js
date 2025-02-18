@@ -42,14 +42,15 @@ class DefaultPlaylistMetadataManager extends BaseQueueManager {
 
         return allData.filter(item => {
             let matches = true;
-            
+
             // Filter by song metadata
             if (filters.urlType && item.urlType !== filters.urlType) matches = false;
             if (filters.playlistId && item.playlistId !== filters.playlistId) matches = false;
-            
+
             // Filter by playlist metadata - requires checking against playlist data
             if (filters.isActive !== undefined || filters.genre) {
                 const playlist = this.getPlaylistMetadata(item.playlistId);
+                
                 if (playlist) {
                     if (filters.isActive !== undefined && playlist.isActive !== filters.isActive) matches = false;
                     if (filters.genre && playlist.genre !== filters.genre) matches = false;
@@ -57,7 +58,6 @@ class DefaultPlaylistMetadataManager extends BaseQueueManager {
                     matches = false;
                 }
             }
-            
             return matches;
         });
     }
@@ -73,7 +73,9 @@ class DefaultPlaylistMetadataManager extends BaseQueueManager {
     }
 
     getAll(filters = {}) {
-        return this.getFilteredData(filters);
+
+        const res = this.getFilteredData(filters);
+         return res;
     }
 
     addManyToQueue(items) {

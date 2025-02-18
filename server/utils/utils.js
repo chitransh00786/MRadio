@@ -1,7 +1,7 @@
 import fsHelper from "./helper/fs-helper.js";
 import fs from 'fs';
 import { token_set_ratio } from 'fuzzball';
-import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION, DEFAULT_PLAYLIST_METADATA_LOCATION, DEFAULT_PLAYLIST_LOCATION, DEFAULT_PLAYLIST_SEED_DATA } from "./constant.js";
+import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION, DEFAULT_PLAYLIST_METADATA_LOCATION, DEFAULT_PLAYLIST_LOCATION, DEFAULT_PLAYLIST_SEED_DATA, COMMON_CONFIG_LOCATION } from "./constant.js";
 import logger from "./logger.js";
 import secret from "./secret.js";
 import ffmpegStatic from 'ffmpeg-static';
@@ -124,4 +124,12 @@ export const addYoutubeVideoId = (videoId) => {
     const url = new URL(baseUrl);
     url.searchParams.set('v', videoId);
     return url.toString();
+}
+
+export const getCommonConfigJson = () => {
+    return fsHelper.readFromJson(COMMON_CONFIG_LOCATION, {});
+}
+
+export const saveCommonConfigJson = (data) => {
+    return fsHelper.writeToJson(COMMON_CONFIG_LOCATION, data);
 }

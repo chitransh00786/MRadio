@@ -2,12 +2,12 @@ import MyDownloader from "../lib/download.js";
 import SongQueueManager from "../utils/queue/songQueueManager.js";
 import cacheManager from "../lib/cacheManager.js";
 import logger from "../utils/logger.js";
-import DefaultPlaylistManager from "../utils/queue/defaultPlaylistManager.js";
 import DefaultPlaylistMetadataManager from "../utils/queue/defaultPlaylistMetadataManager.js";
 import { getRandomNumber } from "../utils/utils.js";
 import { extname, join } from "path";
-import { DEFAULT_FALLBACK_LOCATION } from "../utils/constant.js";
+import { COMMON_CONFIG_KEYS, DEFAULT_FALLBACK_LOCATION } from "../utils/constant.js";
 import fsHelper from "../utils/helper/fs-helper.js";
+import commonConfigService from "./commonConfigService.js";
 
 
 /**
@@ -19,13 +19,13 @@ const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
         // This will create directory if it doesn't exist
         const files = fsHelper.listFiles(dir);
         const musicFiles = files.filter(file => extname(file) === '.mp3');
-        
+
         if (musicFiles.length === 0) {
             throw new Error(`No fallback tracks available in directory: ${dir}`);
         }
-        
+
         const randomTrack = musicFiles[getRandomNumber(0, musicFiles.length - 1)];
-        
+
         return {
             title: randomTrack.replace('.mp3', ''),
             url: join(dir, randomTrack),
@@ -42,11 +42,16 @@ const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
 const emptySongQueueHandler = async () => {
     try {
         const defaultPlaylistMetadata = new DefaultPlaylistMetadataManager();
-        const defaultPlaylistArr = defaultPlaylistMetadata.getAll({ isActive: true });
+        const genre = commonConfigService.get(COMMON_CONFIG_KEYS.defaultPlaylistGenre) ?? null;
+        const filter = {
+            isActive: true,
+            genre: genre === "all" ? null : genre
+        }
+        const defaultPlaylistArr = defaultPlaylistMetadata.getAll(filter);
         if (!defaultPlaylistArr.length) {
             return getFallbackTrack();
         }
-        
+
         return defaultPlaylistArr[getRandomNumber(0, defaultPlaylistArr.length - 1)];
     } catch (error) {
         logger.error('Error in emptySongQueueHandler:', error);
@@ -131,14 +136,14 @@ export const fetchNextTrack = async () => {
             let songResult;
 
             const trackToProcess = currentTrack ?? await emptySongQueueHandler();
-            
+
             const cachedPath = cacheManager.getFromCache(trackToProcess.title);
             if (cachedPath) {
                 logger.info(`Using cached version of: ${trackToProcess.title}`);
                 if (currentTrack) songQueue.removeFromFront();
                 return createTrackResponse(trackToProcess, cachedPath);
             }
-            
+
             songResult = await fetchByUrlType(trackToProcess);
             if (currentTrack) songQueue.removeFromFront();
             return createTrackResponse({
@@ -154,14 +159,14 @@ export const fetchNextTrack = async () => {
                 retry: retryCount + 1
             };
             logger.error('Error fetching track:', errorInfo);
-            
+
             songQueue.removeFromFront();
             retryCount++;
-            
+
             if (retryCount >= MAX_RETRIES) {
                 throw new Error(`Failed to fetch track after ${MAX_RETRIES} attempts`);
             }
-            
+
             return tryFetchTrack();
         }
     };
