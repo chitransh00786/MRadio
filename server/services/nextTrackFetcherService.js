@@ -5,21 +5,52 @@ import logger from "../utils/logger.js";
 import DefaultPlaylistManager from "../utils/queue/defaultPlaylistManager.js";
 import DefaultPlaylistMetadataManager from "../utils/queue/defaultPlaylistMetadataManager.js";
 import { getRandomNumber } from "../utils/utils.js";
+import { readdir } from "fs/promises";
+import { extname, join } from "path";
+import { DEFAULT_FALLBACK_LOCATION } from "../utils/constant.js";
 
 
 /**
  * @description Fetch the song when song queue is empty.
  * @returns 
  */
-const emptySongQueueHandler = async () => {
-    const defaultPlaylistMetadata = new DefaultPlaylistMetadataManager();
-    const defaultPlaylistArr = defaultPlaylistMetadata.getAll();
-    if (!defaultPlaylistArr.length) {
-        throw new Error('No songs available in default playlist');
+const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
+    try {
+        const files = await readdir(dir);
+        const musicFiles = files.filter(file => extname(file) === '.mp3');
+        
+        if (musicFiles.length === 0) {
+            throw new Error('No fallback tracks available');
+        }
+        
+        const randomTrack = musicFiles[getRandomNumber(0, musicFiles.length - 1)];
+        
+        return {
+            title: randomTrack.replace('.mp3', ''),
+            url: join(dir, randomTrack),
+            urlType: 'fallback',
+            duration: 0,
+            requestedBy: 'fallback'
+        };
+    } catch (error) {
+        logger.error('Fallback mechanism failed:', error);
+        throw error;
     }
-    
-    // Get a random song from default playlist
-    return defaultPlaylistArr[getRandomNumber(0, defaultPlaylistArr.length - 1)];
+}
+
+const emptySongQueueHandler = async () => {
+    try {
+        const defaultPlaylistMetadata = new DefaultPlaylistMetadataManager();
+        const defaultPlaylistArr = defaultPlaylistMetadata.getAll();
+        if (!defaultPlaylistArr.length) {
+            return getFallbackTrack();
+        }
+        
+        return defaultPlaylistArr[getRandomNumber(0, defaultPlaylistArr.length - 1)];
+    } catch (error) {
+        logger.error('Error in emptySongQueueHandler:', error);
+        return getFallbackTrack();
+    }
 }
 
 const createTrackResponse = (song, cachedPath = null) => {
@@ -77,6 +108,10 @@ const fetchByUrlType = async (songData) => {
             return await downloadFromJioSaavn(songData);
         case 'soundcloud':
             return await downloadFromSoundCloud(songData);
+        case 'fallback':
+            return { url: songData.url, title: songData.title };
+        default:
+            throw new Error(`Unsupported URL type: ${songData.urlType}`);
     }
 }
 

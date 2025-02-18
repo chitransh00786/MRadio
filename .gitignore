@@ -34,3 +34,4 @@ cache
 docker/
 data/
 test.json
+fallback/
