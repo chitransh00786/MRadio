@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import logger from '../utils/logger.js';
 import fsHelper from '../utils/helper/fs-helper.js';
-import { DEFAULT_CACHE_LOCATION, DEFAULT_TRACKS_LOCATION } from '../utils/constant.js';
+import { CACHE_SIZE, DEFAULT_CACHE_LOCATION, DEFAULT_TRACKS_LOCATION } from '../utils/constant.js';
 
 class CacheManager {
-    constructor(cacheDir = DEFAULT_CACHE_LOCATION, maxCacheSize = 1024 * 1024 * 1024) {
+    constructor(cacheDir = DEFAULT_CACHE_LOCATION, maxCacheSize = CACHE_SIZE) {
         this.cacheDir = cacheDir.replace(/\\/g, '/');
         this.maxCacheSize = maxCacheSize;
         this.ensureCacheDirectory();
@@ -41,9 +41,9 @@ class CacheManager {
         try {
             sourcePath = sourcePath.replace(/\\/g, '/');
             const cachedPath = this.getCachedPath(title);
-            
+
             logger.info(`Attempting to move ${sourcePath} to ${cachedPath}`);
-            
+
             this.ensureCacheDirectory();
 
             if (fsHelper.exists(sourcePath)) {
@@ -84,7 +84,7 @@ class CacheManager {
 
             const files = fsHelper.listFiles(this.cacheDir);
             logger.info(`Found ${files.length} files in cache`);
-            
+
             if (files.length === 0) {
                 return;
             }

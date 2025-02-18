@@ -14,6 +14,10 @@ export const DEFAULT_PLAYLIST_LOCATION = "data/defaultSongPlaylist.json";
 export const DEFAULT_PLAYLIST_METADATA_LOCATION = "data/defaultPlaylistMetadata.json";
 export const COMMON_CONFIG_LOCATION = "data/commonConfig.json";
 
+export const DEFAULT_QUEUE_SIZE = 2;
+export const SONG_METADATA_UPDATE_TIME = 2 * 24 * 60 * 60 * 1000; // 2 days
+export const CACHE_SIZE = 1024 * 1024 * 1024;
+
 export const COMMON_CONFIG_KEYS = {
     defaultPlaylistGenre: "defaultPlaylistGenre", // string
 };
@@ -23,7 +27,6 @@ export const STREAM_MEDIA_TYPE = {
     jiosaavn: "jiosaavn",
     soundcloud: "soundcloud"
 }
-export const DEFAULT_QUEUE_SIZE = 2;
 
 export const JIO_SAAVN_SONG_SEARCH = (songName) => `https://www.jiosaavn.com/api.php?p=1&q=${songName}&_format=json&_marker=0&api_version=4&ctx=web6dot0&n=1&__call=search.getResults`
 export const JIO_SAAVN_PLAYLIST_SEARCH = (playlistId) => `https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=${playlistId}&api_version=4&_format=json&_marker=0&ctx=web6dot0`

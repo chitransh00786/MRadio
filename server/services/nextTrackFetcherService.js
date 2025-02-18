@@ -8,6 +8,8 @@ import { extname, join } from "path";
 import { COMMON_CONFIG_KEYS, DEFAULT_FALLBACK_LOCATION } from "../utils/constant.js";
 import fsHelper from "../utils/helper/fs-helper.js";
 import commonConfigService from "./commonConfigService.js";
+import Service from "./apiService.js";
+import DefaultPlaylistManager from "../utils/queue/defaultPlaylistManager.js";
 
 
 /**
@@ -16,7 +18,6 @@ import commonConfigService from "./commonConfigService.js";
  */
 const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
     try {
-        // This will create directory if it doesn't exist
         const files = fsHelper.listFiles(dir);
         const musicFiles = files.filter(file => extname(file) === '.mp3');
 
@@ -39,15 +40,44 @@ const getFallbackTrack = async (dir = DEFAULT_FALLBACK_LOCATION) => {
     }
 }
 
+const checkAndRefreshMetadata = async (playlist) => {
+    const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+    const metadataDate = new Date(playlist.metadataUpdatedAt);
+    const now = new Date();
+
+    if (now - metadataDate > TWO_DAYS_MS) {
+        logger.info("Updating the metadata for : " + playlist.title);
+        const apiService = new Service();
+        // First remove old metadata
+        await apiService.removeDefaultPlaylist({ index: playlist.index });
+        // Then add fresh metadata
+        await apiService.addDefaultPlaylist({
+            playlistId: playlist.playlistId,
+            title: playlist.title,
+            source: playlist.source,
+            isActive: playlist.isActive,
+            genre: playlist.genre
+        });
+    }
+}
+
 const emptySongQueueHandler = async () => {
     try {
         const defaultPlaylistMetadata = new DefaultPlaylistMetadataManager();
+        const defaultPlaylistStore = new DefaultPlaylistManager();
         const genre = await commonConfigService.get(COMMON_CONFIG_KEYS.defaultPlaylistGenre);
 
         const filter = {
             isActive: true,
             genre: genre === "all" ? undefined : genre,
         }
+
+        const activePlaylists = defaultPlaylistStore.getAll()
+            .map((playlist, index) => ({ ...playlist, index: index + 1 }))
+            .filter(p => p.isActive && (genre === "all" || p.genre === genre));
+
+        await Promise.all(activePlaylists.map(playlist => checkAndRefreshMetadata(playlist)));
+
         const defaultPlaylistArr = defaultPlaylistMetadata.getAll(filter);
         if (!defaultPlaylistArr.length) {
             return getFallbackTrack();
