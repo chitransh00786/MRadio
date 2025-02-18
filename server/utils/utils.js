@@ -1,7 +1,7 @@
 import fsHelper from "./helper/fs-helper.js";
 import fs from 'fs';
 import { token_set_ratio } from 'fuzzball';
-import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION, DEFAULT_PLAYLIST_METADATA_LOCATION, DEFAULT_PLAYLIST_LOCATION } from "./constant.js";
+import { AUTH_TOKEN_LOCATION, SONG_QUEUE_LOCATION, BLOCK_LIST_LOCATION, DEFAULT_PLAYLIST_METADATA_LOCATION, DEFAULT_PLAYLIST_LOCATION, DEFAULT_PLAYLIST_SEED_DATA } from "./constant.js";
 import logger from "./logger.js";
 import secret from "./secret.js";
 import ffmpegStatic from 'ffmpeg-static';

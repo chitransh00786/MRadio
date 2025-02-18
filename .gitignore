@@ -35,3 +35,4 @@ docker/
 data/
 test.json
 fallback/
+media/

@@ -1,17 +1,44 @@
-export const SONG_QUEUE_LOCATION = "config/queue.json";
+import secret from "./secret.js";
+
 export const SPOTIFY_TOKEN_LOCATION = "config/spotify.json";
 export const AUTH_TOKEN_LOCATION = "config/authToken.json";
 export const DEFAULT_PLAYLIST_LOCATION = "config/defaultSongPlaylist.json";
-export const DEFAULT_TRACKS_LOCATION = "tracks";
+
 export const DEFAULT_CACHE_LOCATION = "cache";
-export const DEFAULT_FALLBACK_LOCATION = "fallback";
+
+export const DEFAULT_TRACKS_LOCATION = "media/tracks";
+export const DEFAULT_FALLBACK_LOCATION = "media/fallback";
+
+export const SONG_QUEUE_LOCATION = "data/queue.json";
 export const BLOCK_LIST_LOCATION = "data/blockList.json";
 export const DEFAULT_PLAYLIST_METADATA_LOCATION = "data/defaultPlaylistMetadata.json";
+
 export const DEFAULT_QUEUE_SIZE = 2;
 
 export const JIP_SAAVN_RADIO = "https://www.jiosaavn.com/api.php?__call=webradio.getSong&stationid=NiYjzMrmuVqKYqAAaBcKigB3s1AGJnIYPxS6MooHriPI59HL2nhJuQ__&k=20&next=1&api_version=4&_format=json&_marker=0&ctx=web6dot0"
-
 export const JIO_SAAVN_TOP50 = "https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0"
 
 export const JIO_SAAVN_SONG_SEARCH = (songName) => `https://www.jiosaavn.com/api.php?p=1&q=${songName}&_format=json&_marker=0&api_version=4&ctx=web6dot0&n=1&__call=search.getResults`
 export const JIO_SAAVN_PLAYLIST_SEARCH = (playlistId) => `https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=${playlistId}&api_version=4&_format=json&_marker=0&ctx=web6dot0`
+
+export const DEFAULT_PLAYLIST_SEED_DATA = () => {
+    const id = secret.INITIAL_PLAYLIST_ID;
+    const source = secret.INITIAL_PLAYLIST_SOURCE;
+    const title = secret.INITIAL_PLAYLIST_TITLE;
+    if (!id || !source || !title) {
+        return [{
+            playlistId: "1134543272",
+            title: "Top 50 Songs",
+            source: "jiosaavn",
+            isActive: true,
+            genre: "mix",
+        }];
+    }
+    return [{
+        playlistId: secret.INITIAL_PLAYLIST_ID,
+        title: secret.INITIAL_PLAYLIST_TITLE,
+        source: secret.INITIAL_PLAYLIST_SOURCE,
+        isActive: true,
+        genre: "mix",
+    }]
+}

@@ -243,7 +243,7 @@ class Service {
     * Default Playlist Manager Service
     * ==========================================
     */
-    async addDefaultPlaylist({ playlistId, title, source, requestedBy = "auto" }) {
+    async addDefaultPlaylist({ playlistId, title, source, requestedBy = "auto", isActive = true, genre = "mix" }) {
         try {
             const metadata = await generatePlaylistMetadata(playlistId, source, requestedBy)
             if (metadata.length <= 0) {
@@ -255,17 +255,19 @@ class Service {
                 title,
                 source,
                 metadataUpdatedAt: new Date(),
-                isActive: true,
+                isActive: isActive,
+                genre: genre
             })
             const metadataStore = new DefaultPlaylistMetadataManager();
-            metadata.map(data => ({...data, playlistId: playlistId}));
-            metadataStore.addMany(metadata)
+            const updatedMetadata = metadata.map(data => ({...data, playlistId: playlistId}));
+            metadataStore.addMany(updatedMetadata);
             return { added: true, total: metadata.length }
         } catch (error) {
             logger.error("Error in addDefaultPlaylist service:", { error });
             throw error;
         }
     };
+    
     async removeDefaultPlaylist() { };
     async showDefaultPlaylist() { };
     async updateDefaultPlaylist() {};

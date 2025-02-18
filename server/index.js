@@ -4,6 +4,7 @@ import socketManager from "./lib/socketManager.js";
 import queue from "./lib/queue.js";
 import router from "./api/router.js";
 import { DEFAULT_TRACKS_LOCATION } from "./utils/constant.js";
+import Initializer from "./services/initializer.js";
 
 const PORT = 9126;
 const app = express();
@@ -14,12 +15,17 @@ app.get("/", function (req, res) {
 });
 
 (async () => {
+    // Initialize Initial Data
+    await Initializer.init();
+
+    // Load Initial Track
     await queue.loadTracks(DEFAULT_TRACKS_LOCATION);
     queue.play();
 
     // Initialize socket.io with queue for streaming
     socketManager.initialize(server, queue);
     app.use("/api", router);
+    
     // HTTP stream for music
     app.get("/stream", (req, res) => {
         const { id, client } = queue.addClient();
