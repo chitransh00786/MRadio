@@ -122,19 +122,6 @@ export const addPlaylistToTop = async (req, res) => {
     }
 }
 
-export const addSongToQueueFromSource = async (req, res) => {
-    try {
-        if (!req.body.videoId || !req.body.url) {
-            throw new Error("url and videoId are Required");
-        }
-        const response = await service.addSongToQueueFromSource(req.body);
-        res.status(200).json(successRes(response, "Successfully Added song to the queue"));
-    } catch (error) {
-        logger.error("Error in Adding Song to Queue from Source API", { error });
-        res.status(400).json(errorRes({ message: error.message }, "Song Failed to add from source!"))
-    }
-}
-
 export const removeLastSongRequestedByUser = async (req, res) => {
     try {
         if (!req.params.requestedBy) {
