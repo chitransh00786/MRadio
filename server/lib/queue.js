@@ -27,6 +27,8 @@ class Queue {
         this.isDownloading = false;
         this.minQueueSize = DEFAULT_QUEUE_SIZE;
         this.previousTrack = null;
+        this.startTime = null;
+        this.progressInterval = null;
     }
 
     async previous() {
@@ -218,6 +220,11 @@ class Queue {
 
     async cleanupCurrentStream() {
         this.playing = false;
+        this.startTime = null;
+        if (this.progressInterval) {
+            clearInterval(this.progressInterval);
+            this.progressInterval = null;
+        }
 
         return new Promise((resolve) => {
             const cleanup = () => {
@@ -530,13 +537,43 @@ class Queue {
         }
     }
 
+    calculateProgress() {
+        if (!this.startTime || !this.playing || !this.currentTrack?.duration) {
+            return { elapsed: "00:00", total: this.currentTrack?.duration || "00:00", percent: 0 };
+        }
+
+        const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+        const [totalMinutes, totalSeconds] = this.currentTrack.duration.split(':').map(Number);
+        const totalInSeconds = (totalMinutes * 60) + totalSeconds;
+        
+        const percent = Math.min((elapsed / totalInSeconds) * 100, 100);
+        const elapsedMinutes = Math.floor(elapsed / 60);
+        const elapsedSeconds = elapsed % 60;
+        
+        return {
+            elapsed: `${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSeconds).padStart(2, '0')}`,
+            total: this.currentTrack.duration,
+            percent: Math.round(percent)
+        };
+    }
+
     start() {
         const track = this.currentTrack;
         if (!track) return;
 
         const bitrate = 128000;
         this.playing = true;
+        this.startTime = Date.now();
         this.throttle = new Throttle(bitrate / 8);
+
+        // Set up progress interval
+        if (this.progressInterval) {
+            clearInterval(this.progressInterval);
+        }
+        this.progressInterval = setInterval(() => {
+            const progress = this.calculateProgress();
+            socketManager.emit('playbackProgress', progress);
+        }, 30000);
 
         const pipeline = this.stream.pipe(this.throttle);
 
