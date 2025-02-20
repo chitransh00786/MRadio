@@ -10,6 +10,9 @@ const PORT = 9126;
 const app = express();
 
 const server = http.createServer(app);
+
+app.use(express.json());
+
 app.get("/", function (req, res) {
     res.redirect('/stream');
 });
