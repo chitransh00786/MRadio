@@ -409,7 +409,7 @@ class Queue {
         }
     }
 
-    loadTrackStream() {
+    loadTrackStream(seekTime = 0) {
         const track = this.currentTrack;
         if (!track) return;
 
@@ -420,6 +420,7 @@ class Queue {
         const ffmpegArgs = [
             '-hide_banner',
             '-loglevel', 'error',
+            '-ss', Math.max(0, seekTime).toString(),
             '-i', track.url,
             '-vn',
             '-acodec', 'libmp3lame',
@@ -532,6 +533,58 @@ class Queue {
         } catch (error) {
             logger.error('Error handling track end:', { error });
             this.playing = false;
+        } finally {
+            this.isTransitioning = false;
+        }
+    }
+
+    async seek(seconds) {
+        if (!this.currentTrack || !this.playing || this.isTransitioning) {
+            logger.info("Seek not possible at this time");
+            return;
+        }
+
+        this.isTransitioning = true;
+
+        try {
+            // Convert seconds parameter to number and get current position
+            const seekOffset = parseInt(seconds, 10);
+            const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+            const [totalMinutes, totalSeconds] = this.currentTrack.duration.split(':').map(Number);
+            const totalInSeconds = (totalMinutes * 60) + totalSeconds;
+            
+            // Calculate new position with proper number addition
+            const newPosition = Math.max(0, Math.min(totalInSeconds, elapsed + seekOffset));
+            
+            if (newPosition >= totalInSeconds) {
+                await this.handleTrackEnd();
+                return;
+            }
+
+            if (newPosition === 0 && elapsed < 5) {
+                await this.play(false);
+                return;
+            }
+
+            logger.info(`Seeking from ${elapsed}s to ${newPosition}s`);
+            
+            // Reload stream with new position
+            await this.cleanupCurrentStream();
+            this.loadTrackStream(newPosition);
+            
+            this.startTime = Date.now() - (newPosition * 1000);
+            this.playing = true;
+            this.start();
+
+            socketManager.emit('seeked', {
+                position: newPosition,
+                duration: totalInSeconds
+            });
+
+        } catch (error) {
+            logger.error('Error during seek:', { error });
+            // Try to recover by restarting playback
+            this.play(false);
         } finally {
             this.isTransitioning = false;
         }

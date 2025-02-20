@@ -1,10 +1,11 @@
 import express from 'express';
-import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addDefaultPlaylists, getCommonConfig, createConfigOrUpdateCommonConfig, getDefaultPlaylist, removeDefaultPlaylist, updatePlaylistStatus } from './controller.js';
+import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, generateToken, previousSong, blockCurrentSong, blockSongBySongName, unblockSongBySongName, unblockSongByIndex, clearBlockList, getAllBlockList, isSongBlocked, removeSongFromQueue, addSongToTop, removeLastSongRequestedByUser, addPlaylistToQueue, addPlaylistToTop, addDefaultPlaylists, getCommonConfig, createConfigOrUpdateCommonConfig, getDefaultPlaylist, removeDefaultPlaylist, updatePlaylistStatus, seekSong } from './controller.js';
 import { isAdmin, isValidUser } from './middleware.js';
 const router = express.Router();
 
 router.get("/songs/queue", isValidUser, getQueueList);
 router.get("/songs/skip", isValidUser, skip);
+router.get("/songs/seek/:seconds", isValidUser, seekSong);
 router.get("/songs/previous", isValidUser, previousSong);
 router.get("/songs/current", isValidUser, getCurrentSong);
 router.get("/songs/upcoming", isValidUser, getUpcomingSong);

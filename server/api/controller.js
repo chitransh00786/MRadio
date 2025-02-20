@@ -11,7 +11,7 @@ export const skip = async (req, res) => {
         res.status(200).json(successRes({ skip: true }, "\nSkip Successful\nPlaying next song..."));
     } catch (error) {
         logger.error("Error in skip API", { error });
-        logger.error("Failed to skip song after response sent:", {error});
+        logger.error("Failed to skip song after response sent:", { error });
     }
 }
 
@@ -33,6 +33,19 @@ export const previousSong = async (req, res) => {
         logger.error("Error in Previous Song API", { error });
         res.status(400).json(errorRes({ message: error.message }, "Previous song error"))
 
+    }
+}
+
+export const seekSong = async (req, res) => {
+    try {
+        if (!req.params.seconds || isNaN(+req.params.seconds)) {
+            throw new Error("Invalid seek time");
+        }
+        const response = await service.seekSong(parseInt(req.params.seconds));
+        res.status(200).json(successRes(response, "Seek Song"));
+    } catch (error) {
+        logger.error("Error in Seeking Song API", { error })
+        res.status(400).json(errorRes({ message: error.message }, "Seek Song error"));
     }
 }
 

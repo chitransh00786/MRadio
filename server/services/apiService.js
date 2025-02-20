@@ -28,6 +28,11 @@ class Service {
         return { title, duration: formattedDuration, requestedBy }
     }
 
+    async seekSong(seconds) {
+        await queue.seek(seconds);
+        return true;
+    }
+
     async getQueueList() {
         const songQueue = new SongQueueManager();
         const trackList = queue.tracks;
