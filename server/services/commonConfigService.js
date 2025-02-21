@@ -66,7 +66,10 @@ class CommonConfigService {
      * @returns {any} The value associated with the key, or undefined if not found
      */
     async get(key) {
-        return this.config[key];
+        if(key){
+            return this.config[key];
+        }
+        return this.config;
     }
 
     /**
