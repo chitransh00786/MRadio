@@ -3,13 +3,14 @@ import { addSongToQueue, getCurrentSong, getQueueList, getUpcomingSong, skip, ge
 import { isAdmin, isValidUser } from './middleware.js';
 const router = express.Router();
 
-router.get("/songs/queue", isValidUser, getQueueList);
+router.post("/songs/add", addSongToQueue);
+router.get("/songs/queue", getQueueList);
+router.get("/songs/current", getCurrentSong);
+router.get("/songs/upcoming", getUpcomingSong);
+
 router.get("/songs/skip", isValidUser, skip);
 router.get("/songs/seek/:seconds", isValidUser, seekSong);
 router.get("/songs/previous", isValidUser, previousSong);
-router.get("/songs/current", isValidUser, getCurrentSong);
-router.get("/songs/upcoming", isValidUser, getUpcomingSong);
-router.post("/songs/add", isValidUser, addSongToQueue);
 router.post("/songs/add/top", isValidUser, addSongToTop);
 router.delete("/songs/requests/last/:requestedBy", isValidUser, removeLastSongRequestedByUser);
 router.delete("/songs/remove/:index", isValidUser, removeSongFromQueue);
@@ -30,9 +31,9 @@ router.delete("/songs/block/:index", isValidUser, unblockSongByIndex);
 router.get("/songs/block/list", isValidUser, getAllBlockList);
 router.get("/songs/block/check", isValidUser, isSongBlocked);
 
-router.post("/admin/token", isAdmin, generateToken);
-
 router.get("/config", isValidUser, getCommonConfig);
 router.post("/config", isValidUser, createConfigOrUpdateCommonConfig);
+
+router.post("/admin/token", isAdmin, generateToken);
 
 export default router;
