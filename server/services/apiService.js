@@ -131,15 +131,13 @@ class Service {
             throw new Error("Username is required");
         }
         const songQueue = new SongQueueManager();
-        for (let i = songQueue.queue.length - 1; i >= 0; i--) {
-            if (songQueue.queue[i].requestedBy === requestedBy) {
-                const removedItem = songQueue.queue.splice(i, 1)[0];
-                songQueue.saveSongQueue();
-                return { title: removedItem.title, duration: removedItem.duration, requestedBy: removedItem.requestedBy };
-            }
+        const removedItem = songQueue.removeLastSongRequestedByUser(requestedBy);
+        
+        if (!removedItem) {
+            throw new Error(`No songs found in queue for User: @${requestedBy}`);
         }
-
-        throw new Error(`No songs found in queue for User: @${requestedBy}`);
+        
+        return { title: removedItem.title, duration: removedItem.duration, requestedBy: removedItem.requestedBy };
     }
 
     async addSongToQueueFromSource({ url, videoId, requestedBy = "anonymous", source = "youtube" }) {
