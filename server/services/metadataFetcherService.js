@@ -69,11 +69,31 @@ const searchSoundCloudSong = async (spotifyName) => {
 export const searchYouTubeSong = async (spotifyName) => {
     try {
         const yt = new Yts();
-        const { url, title, timestamp } = await yt.getVideoDetail(spotifyName);
+        const videoDetail = await yt.getVideoDetail(spotifyName);
+        
+        if (!videoDetail) {
+            return null;
+        }
+        
+        const { url, title, timestamp } = videoDetail;
+        
+        // Validate the video (this now handles availability checking internally without cookies)
         const { status, message } = await yt.validateVideo(url);
 
         if (!status) {
-            throw new Error(message);
+            // Log the validation error but don't fail completely
+            // Some videos might have format issues but still be playable
+            console.warn(`YouTube video validation failed: ${message} - ${title}`);
+            
+            // For format-related errors, we'll still return the video but mark it as potentially problematic
+            if (message.includes('Requested format is not available') || 
+                message.includes('format')) {
+                console.info(`Accepting video despite format issues: ${title}`);
+                return { url, title, duration: timestamp, formatWarning: true };
+            }
+            
+            // For other validation errors (duration, category), don't use this video
+            return null;
         }
 
         return { url, title, duration: timestamp };

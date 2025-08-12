@@ -70,33 +70,81 @@ class MyDownloader {
         try {
             const cookiesPath = getCookiesPath();
             
-            const cookiesContent = fs.readFileSync(cookiesPath, 'utf8');
-            const cookieLines = cookiesContent.split('\n').filter(line => 
-                line.trim() && !line.startsWith('#') && line.includes('.youtube.com')
-            );
+            // Check if cookies exist and are valid
+            let useCookies = false;
+            if (fs.existsSync(cookiesPath)) {
+                const cookiesContent = fs.readFileSync(cookiesPath, 'utf8');
+                const cookieLines = cookiesContent.split('\n').filter(line => 
+                    line.trim() && !line.startsWith('#') && line.includes('.youtube.com')
+                );
 
-            if (cookieLines.length === 0) {
-                logger.warn('No YouTube cookies found, download may fail. Please add cookies to cookies.txt');
+                if (cookieLines.length > 0) {
+                    logger.info(`Found ${cookieLines.length} YouTube cookies, will try with cookies first`);
+                    useCookies = true;
+                } else {
+                    logger.warn('No valid YouTube cookies found in cookies.txt');
+                }
             } else {
-                logger.info(`Using ${cookieLines.length} YouTube cookies for download`);
+                logger.warn('No cookies.txt file found');
             }
 
-            const options = {
-                output: outputFilePath,
-                extractAudio: true,
-                audioFormat: 'mp3',
-                audioQuality: 6,
-                noCallHome: true,
-                noCheckCertificate: true,
-                preferFreeFormats: true,
-                ffmpegLocation: getFfmpegPath(),
-                cookies: cookiesPath,
-                verbose: true
-            };
+            // Try different download methods in order of preference
+            const downloadMethods = [
+                // Method 1: Without cookies (often works better for public videos)
+                {
+                    name: 'without cookies',
+                    options: {
+                        output: outputFilePath,
+                        extractAudio: true,
+                        audioFormat: 'mp3',
+                        audioQuality: 6,
+                        noCallHome: true,
+                        noCheckCertificate: true,
+                        preferFreeFormats: true,
+                        ffmpegLocation: getFfmpegPath(),
+                        verbose: false // Reduce verbosity for cleaner logs
+                    }
+                },
+                // Method 2: With cookies (if available)
+                ...(useCookies ? [{
+                    name: 'with cookies',
+                    options: {
+                        output: outputFilePath,
+                        extractAudio: true,
+                        audioFormat: 'mp3',
+                        audioQuality: 6,
+                        noCallHome: true,
+                        noCheckCertificate: true,
+                        preferFreeFormats: true,
+                        ffmpegLocation: getFfmpegPath(),
+                        cookies: cookiesPath,
+                        verbose: false
+                    }
+                }] : [])
+            ];
 
-            logger.info(`Downloading ${title} to ${outputFilePath} with YouTube cookies`);
-            await ytdl(url, options);
-            logger.info(`Successfully downloaded ${title} to ${outputFilePath}`);
+            let downloadSuccessful = false;
+            let lastError = null;
+
+            // Try each download method
+            for (const method of downloadMethods) {
+                try {
+                    logger.info(`Attempting download of ${title} ${method.name}`);
+                    await ytdl(url, method.options);
+                    logger.info(`Successfully downloaded ${title} using ${method.name}`);
+                    downloadSuccessful = true;
+                    break;
+                } catch (error) {
+                    logger.warn(`Download failed ${method.name}: ${error.message}`);
+                    lastError = error;
+                    continue;
+                }
+            }
+
+            if (!downloadSuccessful) {
+                throw new Error(`All download methods failed. Last error: ${lastError?.message}`);
+            }
+
             return { url: outputFilePath }
 
         } catch (error) {

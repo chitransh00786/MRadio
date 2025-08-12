@@ -34,30 +34,86 @@ class Yts {
 
     async validateVideo(url) {
         try {
-            // Check cookie expiration
             const fs = (await import('fs')).default;
             const cookiesPath = getCookiesPath();
             
-            if (!fs.existsSync(cookiesPath)) {
-                throw new Error('cookies.txt file not found. Please create it in the config directory.');
+            // Check if cookies file exists
+            const hasCookies = fs.existsSync(cookiesPath);
+            let cookiesContent = '';
+            let validCookieLines = 0;
+            
+            if (hasCookies) {
+                cookiesContent = fs.readFileSync(cookiesPath, 'utf8');
+                const cookieLines = cookiesContent.split('\n').filter(line => 
+                    line.trim() && !line.startsWith('#') && line.includes('.youtube.com')
+                );
+                validCookieLines = cookieLines.length;
             }
 
-            const cookiesContent = fs.readFileSync(cookiesPath, 'utf8');
-            const cookieLines = cookiesContent.split('\n').filter(line => 
-                line.trim() && !line.startsWith('#') && line.includes('.youtube.com')
-            );
+            // Try different extraction methods in order of preference
+            const extractionMethods = [
+                // Method 1: Without cookies (often works better)
+                {
+                    name: 'without cookies',
+                    options: {
+                        dumpSingleJson: true,
+                        noWarnings: true,
+                        noCallHome: true,
+                        noCheckCertificate: true,
+                        ignoreErrors: true
+                    }
+                },
+                // Method 2: With cookies (if available)
+                ...(hasCookies && validCookieLines > 0 ? [{
+                    name: 'with cookies',
+                    options: {
+                        dumpSingleJson: true,
+                        noWarnings: true,
+                        noCallHome: true,
+                        noCheckCertificate: true,
+                        cookies: cookiesPath,
+                        ignoreErrors: true
+                    }
+                }] : []),
+                // Method 3: With cookies and specific format
+                ...(hasCookies && validCookieLines > 0 ? [{
+                    name: 'with cookies and audio format',
+                    options: {
+                        dumpSingleJson: true,
+                        noWarnings: true,
+                        noCallHome: true,
+                        noCheckCertificate: true,
+                        cookies: cookiesPath,
+                        format: 'bestaudio[ext=m4a]/bestaudio/worst',
+                        ignoreErrors: true
+                    }
+                }] : [])
+            ];
 
-            if (cookieLines.length === 0) {
-                throw new Error('No valid YouTube cookies found in cookies.txt');
+            let info = null;
+            let usedMethod = null;
+
+            // Try each extraction method
+            for (const method of extractionMethods) {
+                try {
+                    logger.info(`Trying video extraction ${method.name} for ${url}`);
+                    info = await ytdl(url, method.options);
+                    usedMethod = method.name;
+                    logger.info(`Successfully extracted video info using ${method.name}`);
+                    break;
+                } catch (error) {
+                    logger.warn(`Video extraction failed using ${method.name}: ${error.message}`);
+                    continue;
+                }
             }
 
-            const info = await ytdl(url, {
-                dumpSingleJson: true,
-                noWarnings: true,
-                noCallHome: true,
-                noCheckCertificate: true,
-                cookies: cookiesPath
-            });
+            // If all methods failed, return error
+            if (!info?.duration) {
+                return { 
+                    status: false, 
+                    message: 'Unable to extract video information. The video might be private, unavailable, or region-locked.'
+                };
+            }
 
             const duration = parseInt(info.duration);
 
@@ -75,12 +131,17 @@ class Yts {
                 return { status: false, message: 'Video is not in the Music category' };
             }
 
-            return { status: true, message: "Successfull" };
+            return { 
+                status: true, 
+                message: `Successful (using ${usedMethod})`,
+                extractionMethod: usedMethod 
+            };
+            
         } catch (error) {
             logger.error('Video validation error:', error);
             return { 
                 status: false, 
-                message: `Video validation error: ${error.message}. Please ensure the cookies.txt file is properly configured in the config directory.`
+                message: `Video validation error: ${error.message}`
             }
         }
     }
@@ -95,6 +156,52 @@ class Yts {
         } catch (error) {
             logger.error("Error getting details: " + error.message);
             throw error;
+        }
+    }
+
+    async checkVideoAvailability(url) {
+        try {
+            const cookiesPath = getCookiesPath();
+            
+            // Quick availability check without downloading
+            const info = await ytdl(url, {
+                dumpSingleJson: true,
+                noWarnings: true,
+                noCallHome: true,
+                cookies: cookiesPath,
+                extractFlat: true, // Only get basic info
+                ignoreErrors: false
+            });
+            
+            return { available: true, info };
+        } catch (error) {
+            logger.warn(`Video availability check failed for ${url}:`, error.message);
+            return { 
+                available: false, 
+                error: error.message.includes('Private video') ? 'Video is private' :
+                       error.message.includes('unavailable') ? 'Video is unavailable' :
+                       error.message.includes('region') ? 'Video is region-locked' :
+                       'Video is not accessible'
+            };
+        }
+    }
+
+    async debugVideoFormats(url) {
+        try {
+            const cookiesPath = getCookiesPath();
+            
+            // List available formats for debugging
+            const formats = await ytdl(url, {
+                listFormats: true,
+                noWarnings: true,
+                cookies: cookiesPath
+            });
+            
+            logger.info(`Available formats for ${url}:`, formats);
+            return formats;
+        } catch (error) {
+            logger.error(`Could not list formats for ${url}:`, error.message);
+            return null;
         }
     }
 }
