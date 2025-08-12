@@ -12,7 +12,8 @@ A powerful and flexible radio broadcasting system that supports multiple music s
   - 🎶 **Spotify** - Metadata and search integration
 
 ### Advanced Capabilities
-- **Real-time Audio Broadcasting** - Live HTTP MP3 streaming
+- **Dual Streaming Support** - Icecast server integration + direct HTTP MP3 streaming
+- **Professional Broadcasting** - Icecast-compatible streaming with metadata support
 - **Smart Queue Management** - Dynamic song queuing with priority control
 - **WebSocket Integration** - Live updates for connected clients
 - **Intelligent Caching System** - Automatic file caching with size management
@@ -30,6 +31,7 @@ A powerful and flexible radio broadcasting system that supports multiple music s
 - **Node.js** (v18 or higher)
 - **FFmpeg** (for audio processing and streaming)
 - **Docker** (optional, for containerized deployment)
+- **Icecast Server** (optional, for professional broadcasting)
 - **API Keys** for music platforms:
   - Spotify Client ID & Secret (for metadata)
   - SoundCloud API Key (for SoundCloud integration)
@@ -65,6 +67,16 @@ SOUNDCLOUD_API_KEY=your_soundcloud_api_key
 # Admin Authentication
 X_ADMIN_API_KEY=your_admin_api_key
 X_ADMIN_TOKEN_KEY=your_admin_token_key
+
+# Icecast Server Configuration (Optional)
+ICECAST_HOST=localhost
+ICECAST_PORT=8000
+ICECAST_PASSWORD=your_icecast_password
+ICECAST_MOUNT=/radio.mp3
+ICECAST_NAME=MRadio
+ICECAST_DESCRIPTION=MRadio - Multi-platform Music Streaming
+ICECAST_GENRE=Various
+ICECAST_BITRATE=128
 
 # Initial Default Playlist (Optional)
 INITIAL_PLAYLIST_ID=playlist_id
@@ -110,6 +122,132 @@ docker compose build
 docker compose up -d
 ```
 
+## Icecast Integration 📡
+
+MRadio supports professional broadcasting through Icecast server integration, providing a standards-compliant streaming solution with proper metadata support.
+
+### Setting Up Icecast Server
+
+#### Option 1: Using Docker (Recommended)
+
+1. **Create Icecast Docker container:**
+```bash
+docker run -d --name icecast \
+  -p 8000:8000 \
+  -e ICECAST_ADMIN_PASSWORD=admin123 \
+  -e ICECAST_SOURCE_PASSWORD=source123 \
+  -e ICECAST_RELAY_PASSWORD=relay123 \
+  moul/icecast
+```
+
+2. **Configure MRadio environment variables:**
+```env
+ICECAST_HOST=localhost
+ICECAST_PORT=8000
+ICECAST_PASSWORD=source123
+ICECAST_MOUNT=/radio.mp3
+ICECAST_NAME=MRadio
+ICECAST_DESCRIPTION=MRadio - Multi-platform Music Streaming
+ICECAST_GENRE=Various
+ICECAST_BITRATE=128
+```
+
+#### Option 2: Local Icecast Installation
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install icecast2
+```
+
+**macOS:**
+```bash
+brew install icecast
+```
+
+**Configuration:**
+Edit `/etc/icecast2/icecast.xml` (Linux) or `/usr/local/etc/icecast.xml` (macOS):
+```xml
+<icecast>
+    <listen-socket>
+        <port>8000</port>
+    </listen-socket>
+    
+    <authentication>
+        <source-password>your_source_password</source-password>
+        <admin-password>your_admin_password</admin-password>
+    </authentication>
+    
+    <mount>
+        <mount-name>/radio.mp3</mount-name>
+        <username>source</username>
+        <password>your_source_password</password>
+        <max-listeners>100</max-listeners>
+        <dump-file>/var/log/icecast2/radio.dump</dump-file>
+        <burst-on-connect>1</burst-on-connect>
+        <mp3-metadata-interval>8192</mp3-metadata-interval>
+    </mount>
+</icecast>
+```
+
+**Start Icecast:**
+```bash
+# Linux
+sudo systemctl start icecast2
+sudo systemctl enable icecast2
+
+# macOS
+brew services start icecast
+```
+
+### Icecast Features
+
+- **Professional Broadcasting**: Standards-compliant streaming protocol
+- **Metadata Support**: Song titles, artists, and album information
+- **Multiple Listeners**: Support for concurrent connections
+- **Auto-Reconnection**: Automatic reconnection on network issues
+- **Fallback Support**: Graceful fallback to direct HTTP streaming
+- **Status Monitoring**: Real-time connection and streaming status
+
+### Streaming URLs
+
+Once configured, your streams will be available at:
+
+- **Icecast Stream**: `http://your-server:8000/radio.mp3`
+- **Direct HTTP Stream**: `http://your-server:9126/stream`
+- **Icecast Admin Panel**: `http://your-server:8000/admin/`
+
+### Troubleshooting Icecast
+
+#### Common Issues
+
+1. **Connection Refused**
+   - Verify Icecast server is running: `netstat -tlnp | grep :8000`
+   - Check firewall settings
+   - Verify ICECAST_HOST and ICECAST_PORT configuration
+
+2. **Authentication Failed**
+   - Verify ICECAST_PASSWORD matches source password in icecast.xml
+   - Check mount point configuration
+
+3. **No Audio Stream**
+   - Check FFmpeg installation and permissions
+   - Verify mount point exists in Icecast configuration
+   - Check logs: `docker logs icecast` or `/var/log/icecast2/`
+
+#### Status Monitoring
+
+Check Icecast status via API:
+```bash
+curl -X GET http://localhost:9126/api/icecast/status
+```
+
+Response includes:
+- Connection status
+- Stream information
+- Listener count
+- Bitrate and quality metrics
+
 ## Usage 🎮
 
 ### Starting the Radio Server
@@ -127,11 +265,17 @@ docker compose up -d
 
 ### Accessing the Radio Stream
 
-#### HTTP Audio Stream
+#### Icecast Stream (Professional Broadcasting)
+```
+http://your-icecast-server:8000/radio.mp3
+```
+High-quality streaming with proper metadata support for media players and broadcasting tools.
+
+#### HTTP Audio Stream (Direct Access)
 ```
 http://localhost:9126/stream
 ```
-Direct access to the MP3 audio stream for media players.
+Direct access to the MP3 audio stream for simple media player integration.
 
 #### Web Interface
 ```
@@ -181,6 +325,11 @@ curl -X GET http://localhost:9126/api/songs/current
 curl -X GET http://localhost:9126/api/songs/queue
 ```
 
+#### Get Icecast Status
+```bash
+curl -X GET http://localhost:9126/api/icecast/status
+```
+
 Start the server in development mode:
 ```bash
 npm start
@@ -224,6 +373,9 @@ Description: Get information about the next song in queue
 
 GET /api/songs/queue
 Description: Get the complete list of songs in the queue
+
+GET /api/icecast/status
+Description: Get Icecast server status and streaming information
 ```
 
 #### Add Songs (Public)
@@ -353,6 +505,21 @@ Content-Type: application/json
 Description: Update configuration values
 ```
 
+#### Streaming Information
+```http
+GET /api/icecast/status
+Description: Get Icecast server status and streaming information
+Response: {
+  "enabled": true,
+  "connected": true,
+  "host": "localhost",
+  "port": 8000,
+  "mount": "/radio.mp3",
+  "listeners": 5,
+  "status": "streaming"
+}
+```
+
 ### Admin Endpoints
 
 #### Token Management
@@ -407,11 +574,20 @@ socket.emit('pong'); // Heartbeat response
 | `SOUNDCLOUD_API_KEY` | SoundCloud API Key | - | Yes* |
 | `X_ADMIN_API_KEY` | Admin API Key | - | Yes |
 | `X_ADMIN_TOKEN_KEY` | Admin Token Key | - | Yes |
+| `ICECAST_HOST` | Icecast server host | - | No** |
+| `ICECAST_PORT` | Icecast server port | - | No** |
+| `ICECAST_PASSWORD` | Icecast source password | - | No** |
+| `ICECAST_MOUNT` | Icecast mount point | `/radio.mp3` | No |
+| `ICECAST_NAME` | Icecast stream name | `MRadio` | No |
+| `ICECAST_DESCRIPTION` | Icecast stream description | `MRadio - Multi-platform Music Streaming` | No |
+| `ICECAST_GENRE` | Icecast stream genre | `Various` | No |
+| `ICECAST_BITRATE` | Icecast stream bitrate | `128` | No |
 | `INITIAL_PLAYLIST_ID` | Default playlist ID | - | No |
 | `INITIAL_PLAYLIST_SOURCE` | Default playlist source | - | No |
 | `INITIAL_PLAYLIST_TITLE` | Default playlist title | - | No |
 
 *Required for full functionality, but the server can run with limited features without them.
+**Required for Icecast streaming. If not provided, the system will fall back to direct HTTP streaming only.
 
 ### Directory Structure
 
@@ -467,8 +643,9 @@ MRadio follows a modular, service-oriented architecture designed for scalability
 #### 1. **HTTP Server & Streaming Engine**
 - **Express.js** REST API server
 - **FFmpeg** audio processing pipeline
-- **Real-time MP3 streaming** with throttling
+- **Dual Streaming Support**: Icecast + direct HTTP MP3 streaming
 - **Socket.IO** for live client updates
+- **Automatic Fallback**: Direct HTTP streaming when Icecast unavailable
 
 #### 2. **Queue Management System**
 - **Dynamic Queue Processing**: Real-time song queue management
@@ -595,6 +772,23 @@ PORT=9127
 - Check file permissions in tracks/cache directories
 - Ensure adequate disk space for caching
 
+#### 6. **Icecast Connection Issues**
+```bash
+# Check if Icecast server is running
+netstat -tlnp | grep :8000
+
+# Test Icecast connection
+curl -I http://localhost:8000/
+
+# Check MRadio logs for Icecast errors
+tail -f logs/app.log | grep -i icecast
+```
+
+#### 7. **Icecast Authentication Errors**
+- Verify `ICECAST_PASSWORD` matches source password in icecast.xml
+- Check mount point configuration in Icecast
+- Ensure source credentials are correct
+
 ### Performance Optimization
 
 1. **Increase Cache Size**: Modify `CACHE_SIZE` in constants
@@ -617,7 +811,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Completed Features ✅
 - ✅ Multi-platform music streaming (YouTube, JioSaavn, SoundCloud)
-- ✅ Real-time HTTP MP3 streaming
+- ✅ Icecast server integration for professional broadcasting
+- ✅ Dual streaming support (Icecast + direct HTTP)
+- ✅ Real-time MP3 streaming with metadata support
 - ✅ Dynamic queue management with priority support
 - ✅ Smart caching system with LRU eviction
 - ✅ Block list management for content filtering
