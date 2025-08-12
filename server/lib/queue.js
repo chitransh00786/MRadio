@@ -11,6 +11,8 @@ import { getFfmpegPath, durationFormatter } from "../utils/utils.js";
 import cacheManager from "./cacheManager.js";
 import { DEFAULT_QUEUE_SIZE, DEFAULT_TRACKS_LOCATION } from "../utils/constant.js";
 import socketManager from "./socketManager.js";
+import IcecastStreamer from "./icecastStreamer.js";
+import SilenceGenerator from "./silenceGenerator.js";
 
 ffmpeg.setFfmpegPath(getFfmpegPath());
 
@@ -29,6 +31,34 @@ class Queue {
         this.previousTrack = null;
         this.startTime = null;
         this.progressInterval = null;
+        this.icecastStreamer = null;
+        this.useIcecast = false;
+    }
+
+    initializeIcecast(config) {
+        if (!config || !config.host || !config.port || !config.password) {
+            logger.error('Invalid Icecast configuration');
+            return false;
+        }
+
+        try {
+            this.icecastStreamer = new IcecastStreamer(config);
+            this.useIcecast = true;
+            
+            // Connect to Icecast server
+            this.icecastStreamer.connect().then(() => {
+                logger.info('Successfully initialized Icecast streaming');
+            }).catch(err => {
+                logger.error('Failed to connect to Icecast on initialization:', err);
+                // Don't fail completely, the streamer will try to reconnect
+            });
+            
+            return true;
+        } catch (error) {
+            logger.error('Failed to initialize Icecast streamer:', error);
+            this.useIcecast = false;
+            return false;
+        }
     }
 
     async previous() {
@@ -113,6 +143,12 @@ class Queue {
     }
 
     broadcast(chunk) {
+        // Send to Icecast if enabled
+        if (this.useIcecast && this.icecastStreamer) {
+            this.icecastStreamer.write(chunk);
+        }
+        
+        // Also send to direct HTTP clients if any
         this.clients.forEach((client) => {
             // Only write to active clients
             if (!client.destroyed) {
@@ -227,6 +263,12 @@ class Queue {
         }
 
         return new Promise((resolve) => {
+            // Send a small silence buffer to maintain stream continuity
+            if (this.useIcecast && this.icecastStreamer && this.icecastStreamer.isConnected) {
+                const silence = SilenceGenerator.generateSilence(50); // 50ms of silence
+                this.broadcast(silence);
+            }
+
             const cleanup = () => {
                 if (this.ffmpegProcess) {
                     this.ffmpegProcess.removeAllListeners();
@@ -255,7 +297,8 @@ class Queue {
                 resolve();
             };
 
-            cleanup();
+            // Add a small delay to ensure silence is sent
+            setTimeout(cleanup, 10);
         });
     }
 
@@ -395,6 +438,10 @@ class Queue {
             }
 
             await this.cleanupCurrentStream();
+            
+            // Add a small delay before starting new track to ensure clean transition
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
             this.loadTrackStream();
             this.start();
             const songData = {
@@ -428,8 +475,10 @@ class Queue {
             '-ac', '2',
             '-ar', '44100',
             '-f', 'mp3',
-            '-fflags', '+nobuffer',
+            '-fflags', '+nobuffer+genpts',
             '-flags', '+low_delay',
+            '-err_detect', 'ignore_err',
+            '-max_error_rate', '1.0',
             'pipe:1'
         ];
 
@@ -648,6 +697,17 @@ class Queue {
                 this.play(true);
             }
         });
+    }
+
+    getIcecastStatus() {
+        if (!this.useIcecast || !this.icecastStreamer) {
+            return { enabled: false };
+        }
+        
+        return {
+            enabled: true,
+            ...this.icecastStreamer.getStatus()
+        };
     }
 }
 
