@@ -1,0 +1,139 @@
+2025-10-24 05:26:56 [[32mINFO[0m]: Created cache directory at cache
+2025-10-24 05:31:01 [[32mINFO[0m]: Starting MRadio server...
+2025-10-24 05:31:01 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:31:01 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:31:01 [[31mERROR[0m]: Error in add_default_playlist service: 'NoneType' object is not iterable
+2025-10-24 05:32:36 [[32mINFO[0m]: Starting MRadio server...
+2025-10-24 05:32:36 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:32:36 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:32:36 [[33mWARNING[0m]: No songs found in the playlist 1134543272 from jiosaavn
+2025-10-24 05:32:36 [[32mINFO[0m]: Icecast configuration not found in .env, using direct HTTP streaming only
+2025-10-24 05:32:36 [[33mWARNING[0m]: Directory not found: media/tracks
+2025-10-24 05:32:36 [[32mINFO[0m]: MRadio server started on port 5000
+2025-10-24 05:32:36 [[32mINFO[0m]: Direct HTTP stream available at: http://localhost:5000/stream
+2025-10-24 05:32:38 [[32mINFO[0m]: Client connected: 54ce9a59-b832-4557-a83f-6d47b3b8a3a2, Total: 1
+2025-10-24 05:32:38 [[32mINFO[0m]: Client connected: 283cb05f-b519-4263-9d58-635f394d3e2e, Total: 2
+2025-10-24 05:32:44 [[32mINFO[0m]: Client connected: a78f2d28-a81f-4ce1-af34-44822d04df03, Total: 3
+2025-10-24 05:32:45 [[32mINFO[0m]: Client connected: fd2bd797-e199-4a35-8d57-6b0f5a13ced8, Total: 4
+2025-10-24 05:32:45 [[32mINFO[0m]: Client connected: cadf9ceb-6940-40aa-9cd3-3e30c0d53000, Total: 5
+2025-10-24 05:32:45 [[32mINFO[0m]: Client connected: 441797ab-6eab-4478-bd97-2bb6b3e791af, Total: 6
+2025-10-24 05:33:25 [[32mINFO[0m]: Starting MRadio server...
+2025-10-24 05:33:25 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:33:25 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:33:25 [[33mWARNING[0m]: No songs found in the playlist 1134543272 from jiosaavn
+2025-10-24 05:33:25 [[32mINFO[0m]: Icecast configuration not found in .env, using direct HTTP streaming only
+2025-10-24 05:33:25 [[33mWARNING[0m]: Directory not found: media/tracks
+2025-10-24 05:33:25 [[32mINFO[0m]: MRadio server started on port 5000
+2025-10-24 05:33:25 [[32mINFO[0m]: Direct HTTP stream available at: http://localhost:5000/stream
+2025-10-24 05:33:26 [[32mINFO[0m]: Client connected: aeddc70c-01cc-4681-8f72-6abdb432f1b2, Total: 1
+2025-10-24 05:33:26 [[32mINFO[0m]: Client disconnected: aeddc70c-01cc-4681-8f72-6abdb432f1b2, Remaining: 0
+2025-10-24 05:33:26 [[32mINFO[0m]: Client connected: c2d48473-3204-48bb-94cd-42a534bb14ee, Total: 1
+2025-10-24 05:33:33 [[32mINFO[0m]: Client disconnected: c2d48473-3204-48bb-94cd-42a534bb14ee, Remaining: 0
+2025-10-24 05:33:33 [[32mINFO[0m]: Client connected: fef4af92-7c30-4c43-bb64-0bad7f12153d, Total: 1
+2025-10-24 05:33:33 [[32mINFO[0m]: Client disconnected: fef4af92-7c30-4c43-bb64-0bad7f12153d, Remaining: 0
+2025-10-24 05:33:34 [[32mINFO[0m]: Client connected: f38da5f6-f819-425f-96ea-57f5a58cb54c, Total: 1
+2025-10-24 05:35:31 [[32mINFO[0m]: Starting MRadio server...
+2025-10-24 05:35:31 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:35:31 [[33mWARNING[0m]: No songs found in the playlist 1134543272 from jiosaavn
+2025-10-24 05:35:31 [[32mINFO[0m]: Icecast configuration not found in .env, using direct HTTP streaming only
+2025-10-24 05:35:31 [[33mWARNING[0m]: Directory not found: media/tracks
+2025-10-24 05:35:31 [[32mINFO[0m]: MRadio server started on port 5000
+2025-10-24 05:35:31 [[32mINFO[0m]: Direct HTTP stream available at: http://localhost:5000/stream
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error in empty_song_queue_handler: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching track: Fallback directory not found: media/fallback (retry 1)
+2025-10-24 05:35:31 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error in empty_song_queue_handler: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching track: Fallback directory not found: media/fallback (retry 2)
+2025-10-24 05:35:31 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error in empty_song_queue_handler: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching track: Fallback directory not found: media/fallback (retry 3)
+2025-10-24 05:35:31 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:35:32 [[32mINFO[0m]: Client connected: 9ff40701-a073-43e2-85d2-2fed6e3cd964, Total: 1
+2025-10-24 05:35:32 [[32mINFO[0m]: Client disconnected: 9ff40701-a073-43e2-85d2-2fed6e3cd964, Remaining: 0
+2025-10-24 05:35:32 [[32mINFO[0m]: Client connected: ff6188b3-1ba8-42fd-a8ad-a0c73149235f, Total: 1
+2025-10-24 05:37:32 [[32mINFO[0m]: Client disconnected: ff6188b3-1ba8-42fd-a8ad-a0c73149235f, Remaining: 0
+2025-10-24 05:37:32 [[32mINFO[0m]: Client connected: b668afdc-b99f-42a6-8baa-3910ff3aeeac, Total: 1
+2025-10-24 05:37:32 [[32mINFO[0m]: Client disconnected: b668afdc-b99f-42a6-8baa-3910ff3aeeac, Remaining: 0
+2025-10-24 05:37:33 [[32mINFO[0m]: Client connected: 30dcb51f-5ac6-463d-aa34-57bb9dccc3c3, Total: 1
+2025-10-24 05:38:00 [[32mINFO[0m]: Starting MRadio server...
+2025-10-24 05:38:01 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:38:01 [[33mWARNING[0m]: No songs found in the playlist 1134543272 from jiosaavn
+2025-10-24 05:38:01 [[32mINFO[0m]: Icecast configuration not found in .env, using direct HTTP streaming only
+2025-10-24 05:38:01 [[32mINFO[0m]: Loaded 0 tracks from media/tracks
+2025-10-24 05:38:01 [[32mINFO[0m]: MRadio server started on port 5000
+2025-10-24 05:38:01 [[32mINFO[0m]: Direct HTTP stream available at: http://localhost:5000/stream
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 1)
+2025-10-24 05:38:01 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 2)
+2025-10-24 05:38:01 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 3)
+2025-10-24 05:38:01 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:38:01 [[32mINFO[0m]: Client connected: 8591c1ac-a7b0-4488-a1f5-91a664f75f71, Total: 1
+2025-10-24 05:38:02 [[32mINFO[0m]: Client disconnected: 8591c1ac-a7b0-4488-a1f5-91a664f75f71, Remaining: 0
+2025-10-24 05:38:02 [[32mINFO[0m]: Client connected: 046a2da8-058c-4b2b-87b9-c467a45abc78, Total: 1
+2025-10-24 05:39:33 [[32mINFO[0m]: Client disconnected: 046a2da8-058c-4b2b-87b9-c467a45abc78, Remaining: 0
+2025-10-24 05:39:33 [[32mINFO[0m]: Client connected: 0e092127-3eba-49b7-956f-0c3d85949ba2, Total: 1
+2025-10-24 05:39:33 [[32mINFO[0m]: Client disconnected: 0e092127-3eba-49b7-956f-0c3d85949ba2, Remaining: 0
+2025-10-24 05:39:34 [[32mINFO[0m]: Client connected: 28d8f18e-51a4-4e0d-b735-f54a00f8dde9, Total: 1
+2025-10-24 05:40:18 [[32mINFO[0m]: Client disconnected: 28d8f18e-51a4-4e0d-b735-f54a00f8dde9, Remaining: 0
+2025-10-24 05:40:58 [[32mINFO[0m]: Client connected: 6cf71261-3a5f-4500-b8bc-07c91989d744, Total: 1
+2025-10-24 05:40:58 [[32mINFO[0m]: Client disconnected: 6cf71261-3a5f-4500-b8bc-07c91989d744, Remaining: 0
+2025-10-24 05:40:58 [[32mINFO[0m]: Client connected: 59dfe5ee-c3e4-4977-9569-fe892cd43f78, Total: 1
+2025-10-24 05:43:20 [[32mINFO[0m]: Starting MRadio server...
+2025-10-24 05:43:20 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:43:20 [[33mWARNING[0m]: No songs found in the playlist 1134543272 from jiosaavn
+2025-10-24 05:43:20 [[32mINFO[0m]: Icecast configuration not found in .env, using direct HTTP streaming only
+2025-10-24 05:43:20 [[32mINFO[0m]: Loaded 0 tracks from media/tracks
+2025-10-24 05:43:20 [[32mINFO[0m]: MRadio server started on port 5000
+2025-10-24 05:43:20 [[32mINFO[0m]: Direct HTTP stream available at: http://localhost:5000/stream
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 1)
+2025-10-24 05:43:20 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 2)
+2025-10-24 05:43:20 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 3)
+2025-10-24 05:43:20 [[33mWARNING[0m]: No items to remove from front
+2025-10-24 05:43:21 [[32mINFO[0m]: Client connected: 1ecbe157-b39c-4d96-9c58-ec73cde2b309, Total: 1
+2025-10-24 05:43:21 [[32mINFO[0m]: Client disconnected: 1ecbe157-b39c-4d96-9c58-ec73cde2b309, Remaining: 0
+2025-10-24 05:43:21 [[32mINFO[0m]: Client connected: 42199aa1-1ac8-4154-a5ec-d165551958e5, Total: 1
+2025-10-24 05:43:40 [[32mINFO[0m]: Client connected: 36fe4771-b804-4ac6-b755-6ccd09735c6f, Total: 2
+2025-10-24 05:43:40 [[32mINFO[0m]: Client disconnected: 36fe4771-b804-4ac6-b755-6ccd09735c6f, Remaining: 1
+2025-10-24 05:43:40 [[32mINFO[0m]: Client connected: 2447a943-5a20-4374-8852-640dd4c79d3d, Total: 2
+2025-10-24 05:43:44 [[32mINFO[0m]: Client connected: dc58b154-83a1-43e5-8bec-929531d2b3d8, Total: 3
+2025-10-24 05:43:44 [[32mINFO[0m]: Client disconnected: dc58b154-83a1-43e5-8bec-929531d2b3d8, Remaining: 2
+2025-10-24 05:43:44 [[32mINFO[0m]: Client disconnected: 2447a943-5a20-4374-8852-640dd4c79d3d, Remaining: 1
+2025-10-24 05:43:44 [[32mINFO[0m]: Client connected: 43321ad5-b07d-47fa-a9b2-d6f33511a0a1, Total: 2
+2025-10-24 05:44:14 [[32mINFO[0m]: Client disconnected: 43321ad5-b07d-47fa-a9b2-d6f33511a0a1, Remaining: 1
+2025-10-24 05:45:05 [[32mINFO[0m]: Client disconnected: 42199aa1-1ac8-4154-a5ec-d165551958e5, Remaining: 0
+2025-10-24 05:45:21 [[32mINFO[0m]: Client connected: 75348b71-86a8-410a-b2f0-5de7b81b31a5, Total: 1
+2025-10-24 05:45:22 [[32mINFO[0m]: Client disconnected: 75348b71-86a8-410a-b2f0-5de7b81b31a5, Remaining: 0
+2025-10-24 05:45:22 [[32mINFO[0m]: Client connected: 6a37ee66-c862-48b8-a702-db120b33b12b, Total: 1
+2025-10-24 05:46:48 [[32mINFO[0m]: Client connected: c1da65a9-7986-4b3f-929a-39468b25d35d, Total: 2
+2025-10-24 05:46:48 [[32mINFO[0m]: Client disconnected: c1da65a9-7986-4b3f-929a-39468b25d35d, Remaining: 1
+2025-10-24 05:46:49 [[32mINFO[0m]: Client connected: 7f05f089-8cee-4c1c-9dde-6cb52e7b0742, Total: 2
