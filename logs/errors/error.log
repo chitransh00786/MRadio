@@ -1,0 +1,49 @@
+2025-10-24 05:31:01 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:31:01 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:31:01 [[31mERROR[0m]: Error in add_default_playlist service: 'NoneType' object is not iterable
+2025-10-24 05:32:36 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:32:36 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:33:25 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:33:25 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:35:31 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error in empty_song_queue_handler: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching track: Fallback directory not found: media/fallback (retry 1)
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error in empty_song_queue_handler: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching track: Fallback directory not found: media/fallback (retry 2)
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error in empty_song_queue_handler: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Fallback mechanism failed: Fallback directory not found: media/fallback
+2025-10-24 05:35:31 [[31mERROR[0m]: Error fetching track: Fallback directory not found: media/fallback (retry 3)
+2025-10-24 05:38:01 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 1)
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 2)
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:38:01 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 3)
+2025-10-24 05:43:20 [[31mERROR[0m]: 200, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0'
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching Playlist
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 1)
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 2)
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error in empty_song_queue_handler: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Fallback mechanism failed: No fallback tracks available in directory: media/fallback
+2025-10-24 05:43:20 [[31mERROR[0m]: Error fetching track: No fallback tracks available in directory: media/fallback (retry 3)
